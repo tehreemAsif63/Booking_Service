@@ -1,4 +1,4 @@
-# Booking_Service
+# User_Service
 
 
 
@@ -15,14 +15,14 @@ Already a pro? Just edit this README.md and make it your own. Want to make it ea
 
 ```
 cd existing_repo
-git remote add origin https://git.chalmers.se/courses/dit355/2023/student-teams/dit356-2023-03/booking_service.git
+git remote add origin https://git.chalmers.se/courses/dit355/2023/student-teams/dit356-2023-03/auth_service.git
 git branch -M main
 git push -uf origin main
 ```
 
 ## Integrate with your tools
 
-- [ ] [Set up project integrations](https://git.chalmers.se/courses/dit355/2023/student-teams/dit356-2023-03/booking_service/-/settings/integrations)
+- [ ] [Set up project integrations](https://git.chalmers.se/courses/dit355/2023/student-teams/dit356-2023-03/auth_service/-/settings/integrations)
 
 ## Collaborate with your team
 
