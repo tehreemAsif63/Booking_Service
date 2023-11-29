@@ -7,12 +7,11 @@ import {
   MessagePayload,
 } from "./utilities/types-utils";
 import { MessageException } from "./exceptions/MessageException";
-const mongoURI = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/Bookings";
+const mongoURI =
+  process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/Bookings";
 const client = mqtt.connect(process.env.MQTT_URI || "mqtt://localhost:1883");
 
-const messageMapping: { [key: string]: MessageHandler } = {
- 
-};
+const messageMapping: { [key: string]: MessageHandler } = {};
 
 client.on("connect", () => {
   client.subscribe("auth/#");
@@ -22,12 +21,11 @@ client.on("message", async (topic, message) => {
   console.log(message.toString());
   const handler = messageMapping[topic];
   if (handler) {
-    const { payload, responseTopic } = JSON.parse(
+    const { payload, responseTopic, requestInfo } = JSON.parse(
       message.toString()
     ) as MessagePayload;
     try {
-      console.log("I gotcha");
-      const result = await handler(payload);
+      const result = await handler(payload, requestInfo);
       client.publish(responseTopic, JSON.stringify(result), { qos: 2 });
     } catch (error) {
       console.log(error);

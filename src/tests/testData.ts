@@ -1,7 +1,7 @@
 const  mongoURI = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/Bookings";
 
 import mongoose from "mongoose";
-import  Dentist from"../schemas/dentists";
+
 import  Slot from"../schemas/slots";
 import  Clinic from"../schemas/clinics";
 
@@ -20,19 +20,12 @@ async function insertData() {
     console.log("Inserted a test slot");
     const slotId = slot._id;
 
-    const dentist = await new Dentist({ 
-        name: "Dentist1",
-        email: "dentist@dentist.com",
-        password: "",
-        slot: [slotId]
-     }).save();
-    console.log("Inserted a test dentist");
-    const dentistId = dentist._id;
+   
 
     const clinic = await new Clinic({ 
         clinicName: "Test Clinic",
         address: "Västra Hamngatan 5, 411 17 Göteborg",
-        workingDentists: [dentistId]
+        workingDentists: []
      }).save();
     console.log("Inserted a test clinic");
 
