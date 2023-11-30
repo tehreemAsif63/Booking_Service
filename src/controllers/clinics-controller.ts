@@ -61,6 +61,30 @@ const getUser: MessageHandler = async (data) => {
   
     return clinic;
   };
+
+  // delete clinic with a specific ID
+const deleteClinic: MessageHandler = async (data) => {
+    const { clinic_id } = data;
+  
+    const clinic = await clinicSchema.findByIdAndDelete(clinic_id);
+  
+    if (!clinic) {
+      throw new MessageException({
+        code: 400,
+        message: "Invalid id",
+      });
+    }
+  
+    if (clinic === null) {
+      throw new MessageException({
+        code: 400,
+        message: "Clinic does not exist",
+      });
+    }
+  
+    return "Clinic deleted";
+  };
+  
   
   
 /**
