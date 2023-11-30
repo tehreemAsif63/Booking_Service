@@ -1,9 +1,7 @@
 import clinicSchema, { Clinic } from "../schemas/clinics";
 import { MessageException } from "../exceptions/MessageException";
-import jwt from "jsonwebtoken";
-import bcrypt from "bcrypt";
 import { MessageHandler, MessageData } from "../utilities/types-utils";
-import clinics from "../schemas/clinics";
+
 
 
 
