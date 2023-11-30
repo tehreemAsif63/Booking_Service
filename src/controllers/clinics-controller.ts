@@ -1,7 +1,46 @@
-/**const router = require("express").Router();
-const Clinics = require("../schemas/clinics.js");
-const { assertAdmin } = require("../utilities/assertAuthority.js");
+import clinicSchema, { Clinic } from "../schemas/clinics";
+import { MessageException } from "../exceptions/MessageException";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt";
+import { MessageHandler, MessageData } from "../utilities/types-utils";
+import clinics from "../schemas/clinics";
 
+
+//creating a clinic
+const createClinic: MessageHandler = async (data) => {
+    const { clinicName, address, workingDentists } =
+      data;
+  
+    // validate the data of the patient clinicName: address: workingDentists:
+    if (
+      !(
+        clinicName &&
+        address &&
+        workingDentists
+      )
+    ) {
+      // throw
+      throw new MessageException({
+        code: 403,
+        message: "Input missing data, All input fields are required to be filled.",
+      });
+    }
+  
+    // find a registered Clinic in DB
+    const registeredClinic = clinicSchema.find({ clinicName, address });
+  
+    // check if clinic already registered in DB
+    if ((await registeredClinic).length > 0) {
+      throw new MessageException({
+        code: 403,
+        message: "Clinic already exists",
+      });
+    }
+    clinics.save();
+    return clinics;
+  };
+  
+/**
 / **
  * Get /clinics
  * @summary Returns all clinics
