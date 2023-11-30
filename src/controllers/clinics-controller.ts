@@ -19,7 +19,6 @@ const createClinic: MessageHandler = async (data) => {
         workingDentists
       )
     ) {
-      // throw
       throw new MessageException({
         code: 403,
         message: "Input missing data, All input fields are required to be filled.",
@@ -39,6 +38,30 @@ const createClinic: MessageHandler = async (data) => {
     clinics.save();
     return clinics;
   };
+
+  // return Clinic with a specific id
+const getUser: MessageHandler = async (data) => {
+    const { clinic_id } = data;
+    console.log("I am here",data.requestInfo?.clinic)
+    const clinic = await clinicSchema.findById(clinic_id);
+  
+    if (!clinic) {
+      throw new MessageException({
+        code: 400,
+        message: "Invalid clinic ID",
+      });
+    }
+  
+    if (clinic === null) {
+      throw new MessageException({
+        code: 400,
+        message: "Clinic does not exist",
+      });
+    }
+  
+    return clinic;
+  };
+  
   
 /**
 / **
