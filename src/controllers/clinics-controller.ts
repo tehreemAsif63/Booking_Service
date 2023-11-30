@@ -6,11 +6,43 @@ import { MessageHandler, MessageData } from "../utilities/types-utils";
 import clinics from "../schemas/clinics";
 
 
+
+
+const isAdmin = (user) => {
+  // Implement your logic to check if the user is an admin
+  return user && user.role === "admin";
+};
+
+const authenticateUser = (token) => {
+  // Implement your logic to authenticate the user using the token
+  // Verify the token using jwt.verify or any authentication mechanism
+  // Return user information if authenticated, otherwise throw an exception
+};
+
+
 //creating a clinic- POST
 const createClinic: MessageHandler = async (data) => {
-    const { clinicName, address, workingDentists } =
+    const { clinicName, address, workingDentists, userToken } =
       data;
   
+      // Authenticate the user
+      const user = authenticateUser(userToken);
+      if (!user) {
+          throw new MessageException({
+              code: 401,
+              message: "Unauthorized. User authentication failed.",
+          });
+      }
+  
+      // Check if the user is an admin
+      if (!isAdmin(user)) {
+          throw new MessageException({
+              code: 403,
+              message: "Forbidden. Only admins can create clinics.",
+          });
+      }
+  
+
     // validate the data of the patient clinicName: address: workingDentists:
     if (!clinicName || !address || !workingDentists) {
       throw new MessageException({
@@ -21,12 +53,11 @@ const createClinic: MessageHandler = async (data) => {
     
     // find a registered Clinic in DB
     const registeredClinic = await clinicSchema.find({ clinicName, address });
-  
     // check if clinic already registered in DB
     if ((await registeredClinic).length > 0) {
       throw new MessageException({
         code: 403,
-        message: "Clinic already exists",
+        message: "Forbidden. Clinic already exists",
       });
     }
      // Create a new clinic
@@ -43,30 +74,44 @@ const createClinic: MessageHandler = async (data) => {
 
 
 
-//getting all clinics- GET all
-  const getAllClinic: MessageHandler = async (data) => {
-    const allClinics = await clinicSchema.find({});
-    return allClinics;
-  };
+
+//getting all clinics- GET 
+const getAllClinic: MessageHandler = async (data) => {
+
+try{ 
+  const allClinics = await clinicSchema.find({});
+
+    // Check if any clinic exists
+    if (allClinics.length > 0) {
+      return allClinics;
+    } else {
+      throw new MessageException({
+        code: 404,
+        message: "No clinic found",
+      });
+    }
+  
+} catch (error) {
+    throw new MessageException({
+      code: 500,
+      message: "Failed to find clinics",
+    });
+}
+};
 
 
-  // return Clinic with a specific id
+
+
+
+  // getting Clinic with a specific id- GET/:id
 const getThisClinic: MessageHandler = async (data) => {
     const { clinic_id } = data;
-    console.log("I am here",data.requestInfo?.clinic)
     const clinic = await clinicSchema.findById(clinic_id);
   
     if (!clinic) {
       throw new MessageException({
-        code: 400,
-        message: "Invalid clinic ID",
-      });
-    }
-  
-    if (clinic === null) {
-      throw new MessageException({
-        code: 400,
-        message: "Clinic does not exist",
+        code: 404,
+        message: "Not Found. Clinic does not exists.",
       });
     }
   
@@ -77,13 +122,30 @@ const getThisClinic: MessageHandler = async (data) => {
 
 // updateClinic fields -PATCH
 const updateClinic: MessageHandler = async (data) => {
-  const { clinic_id, clinicUpdates } = data;
+  const { clinic_id, clinicUpdates, userToken } = data;
+
+   //Authenticate the user
+    const user = authenticateUser(userToken);
+    if (!user) {
+        throw new MessageException({
+            code: 401,
+            message: "Unauthorized. User authentication failed.",
+        });
+    }
+
+    // Check if the user is an admin
+    if (!isAdmin(user)) {
+        throw new MessageException({
+            code: 403,
+            message: "Forbidden. Only admins can update clinics.",
+        });
+    }
 
   // Check if clinicUpdates is provided and not empty
   if (!clinic_id || !clinicUpdates || Object.keys(clinicUpdates).length === 0) {
     throw new MessageException({
         code: 400,
-        message: "Invalid request data",
+        message: "Bad Request. Invalid request data",
     });
 }
 
@@ -92,7 +154,7 @@ const existingClinic = await clinicSchema.findById(clinic_id);
 if (!existingClinic) {
     throw new MessageException({
         code: 400,
-        message: "Invalid clinic ID, clinic not found",
+        message: "Not Found. Clinic not found",
     });
 }
 
@@ -105,8 +167,8 @@ const updatedClinic = await clinicSchema.findByIdAndUpdate(
 
 if (!updatedClinic) {
     throw new MessageException({
-        code: 400,
-        message: "Failed to update clinic",
+        code: 500,
+        message: "Internal Server Error. Failed to update clinic",
     });
 }
 
@@ -117,33 +179,62 @@ return updatedClinic;
 
   // delete clinic with a specific ID
 const deleteClinic: MessageHandler = async (data) => {
-    const { clinic_id } = data;
+    const { clinic_id, userToken } = data;
   
+     // Authenticate the user
+     const user = authenticateUser(userToken);
+     if (!user) {
+         throw new MessageException({
+             code: 401,
+             message: "Unauthorized. User authentication failed.",
+         });
+     }
+ 
+     // Check if the user is an admin
+     if (!isAdmin(user)) {
+         throw new MessageException({
+             code: 403,
+             message: "Forbidden. Only admins can delete clinics.",
+         });
+     }
+
     const clinic = await clinicSchema.findByIdAndDelete(clinic_id);
   
     if (!clinic) {
       throw new MessageException({
-        code: 400,
-        message: "Invalid id",
+        code: 404,
+        message: "Not Found. Clinic does not exist",
       });
     }
   
-    if (clinic === null) {
-      throw new MessageException({
-        code: 400,
-        message: "Clinic does not exist",
-      });
-    }
-  
-    return "Clinic deleted";
+    return "204- Clinic deleted successfully";
   };
   
 
   //Delete all clinics method
   const deleteAllClinics: MessageHandler = async (data) => {
+    const { userToken } = data;
+
+    // Authenticate the user
+    const user = authenticateUser(userToken);
+    if (!user) {
+        throw new MessageException({
+            code: 401,
+            message: "Unauthorized. User authentication failed.",
+        });
+    }
+
+    // Check if the user is an admin
+    if (!isAdmin(user)) {
+        throw new MessageException({
+            code: 403,
+            message: "Forbidden. Only admins can delete clinics.",
+        });
+    }
+
     try {
       const result = await clinicSchema.deleteMany({});
-      return `Deleted ${result.deletedCount} clinics`;
+      return `204- Deleted ${result.deletedCount} clinics`;
     } catch (error) {
       throw new MessageException({
           code: 500,
@@ -156,126 +247,9 @@ const deleteClinic: MessageHandler = async (data) => {
 
 export default {
   createClinic,
+  getAllClinic,
   getThisClinic,
   updateClinic,
   deleteClinic,
   deleteAllClinics,
 };
-
-
-
-  
-/**
-/ **
- * Get /clinics
- * @summary Returns all clinics
- * @return {object} Successful Response: 200
- * @return {object} Clinics not found: 404
- * /
-router.get("/", async function(req, res){
-    const clinics = await Clinics.find().select("-__v");
-    if (clinics.length === 0) {
-        return res.status(404).json({
-            message: "No clinics are registered to the system!!"
-        })
-    }
-    return res.status(200).send(clinics);
-})
-
-/ **
- * Get /clinics/{id}
- * @summary Returns a certain clinic by id
- * @return {object} Successful Response: 200
- * @return {object} Clinic not found: 404
- * /
-router.get("/:id", async function(req, res){
-    const clinic = await Clinics.findOne({ id: req.params._id }).select("-__v");
-    if (clinic && !clinic._id) {
-        return res.status(404).json({
-            message: "The following clinic does not exist."
-        })
-    }
-    return res.status(200).send(clinic);
-})
-
-/ **
- * Post /clinics
- * @summary Creates a new clinic
- * @return {object} Successful Request (Clinic created): 201
- * @return {object} Bad Request Response: 400
- * /
-router.post("/", async function(req, res) {
-    const newClinic = new Clinics({
-        clinicName: req.body.clinicName,
-        address: req.body.address
-    });
-
-    console.log(newClinic);
-
-    newClinic.save()
-        .then(savedClinic => {
-            return res.status(201).json({
-                message: "Clinic successfully created :)",
-                clinic: savedClinic
-            });
-        })
-        .catch(err => {
-            if (err.code === 11000) {
-                return res.status(400).json({
-                    title: "Error",
-                    message: "A clinic with the same address already exists!!"
-                });
-            } else {
-                console.error("Error saving clinic:", err);
-                return res.status(500).json({
-                    title: "Error",
-                    message: "Internal Server Error"
-                });
-            }
-        });
-});
-
-
-/ **
- * Delete /clinics/{id}
- * @summary Delete a certain clinic by using id
- * @return {object} Successful response: 204
- * @return {object} Not Authorized (Not logged in): 401
- * @return {object} No permission to delete the account: 403
- * @return {object} Clinic with the id does not exist: 404
- * /
-router.delete("/:id", async function(req, res){
-    const clinicId = req.params.id;
-    const clinic = await Clinics.findOne({ id: clinicId }).select("-__v");
-    if (!clinic) {
-        return res.status(404).json({
-            message: "User does not exist!!"
-        })
-    }
-    await clinic.deleteOne();
-    res.json({
-        message: "Clinic deleted successfully"
-    });
-})
-
-/ **
- * Delete /clinics
- * @summary Delete every clinics
- * @return {object} Successful response: 200
- * @return {object} Not authorized: 403
- * /
-router.delete("/", async function (req, res) {
-    try {
-        const clinics = await Clinics.find().select("-__v -clinicName");
-        await Clinics.deleteMany();
-        return res.status(204).send(clinics);
-    } catch (error) {
-        console.error("Error deleting clinics:", error);
-        return res.status(500).json({
-            title: "Error",
-            message: "Internal Server Error"
-        });
-    }
-});
-
-module.exports = router;**/
