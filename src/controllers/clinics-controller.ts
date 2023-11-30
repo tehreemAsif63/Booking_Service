@@ -139,12 +139,27 @@ const deleteClinic: MessageHandler = async (data) => {
   };
   
 
+  //Delete all clinics method
+  const deleteAllClinics: MessageHandler = async (data) => {
+    try {
+      const result = await clinicSchema.deleteMany({});
+      return `Deleted ${result.deletedCount} clinics`;
+    } catch (error) {
+      throw new MessageException({
+          code: 500,
+          message: "Failed to delete clinics",
+      });
+    }
+  }
+
+
 
 export default {
   createClinic,
   getThisClinic,
   updateClinic,
   deleteClinic,
+  deleteAllClinics,
 };
 
 
