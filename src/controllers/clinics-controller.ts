@@ -6,27 +6,21 @@ import { MessageHandler, MessageData } from "../utilities/types-utils";
 import clinics from "../schemas/clinics";
 
 
-//creating a clinic
+//creating a clinic- POST
 const createClinic: MessageHandler = async (data) => {
     const { clinicName, address, workingDentists } =
       data;
   
     // validate the data of the patient clinicName: address: workingDentists:
-    if (
-      !(
-        clinicName &&
-        address &&
-        workingDentists
-      )
-    ) {
+    if (!clinicName || !address || !workingDentists) {
       throw new MessageException({
-        code: 403,
-        message: "Input missing data, All input fields are required to be filled.",
+          code: 403,
+          message: "Input missing data, All input fields are required to be filled.",
       });
-    }
-  
+     }
+    
     // find a registered Clinic in DB
-    const registeredClinic = clinicSchema.find({ clinicName, address });
+    const registeredClinic = await clinicSchema.find({ clinicName, address });
   
     // check if clinic already registered in DB
     if ((await registeredClinic).length > 0) {
@@ -35,12 +29,29 @@ const createClinic: MessageHandler = async (data) => {
         message: "Clinic already exists",
       });
     }
-    clinics.save();
-    return clinics;
+     // Create a new clinic
+     const newClinic = new clinicSchema({
+      clinicName,
+      address,
+      workingDentists,
+  });
+ 
+   // Save the clinic to the database
+   await newClinic.save();
+   return newClinic;
+};
+
+
+
+//getting all clinics- GET all
+  const getAllClinic: MessageHandler = async (data) => {
+    const allClinics = await clinicSchema.find({});
+    return allClinics;
   };
 
+
   // return Clinic with a specific id
-const getUser: MessageHandler = async (data) => {
+const getThisClinic: MessageHandler = async (data) => {
     const { clinic_id } = data;
     console.log("I am here",data.requestInfo?.clinic)
     const clinic = await clinicSchema.findById(clinic_id);
@@ -61,6 +72,48 @@ const getUser: MessageHandler = async (data) => {
   
     return clinic;
   };
+
+
+
+// updateClinic fields -PATCH
+const updateClinic: MessageHandler = async (data) => {
+  const { clinic_id, clinicUpdates } = data;
+
+  // Check if clinicUpdates is provided and not empty
+  if (!clinic_id || !clinicUpdates || Object.keys(clinicUpdates).length === 0) {
+    throw new MessageException({
+        code: 400,
+        message: "Invalid request data",
+    });
+}
+
+// Check if the clinic with the given ID exists
+const existingClinic = await clinicSchema.findById(clinic_id);
+if (!existingClinic) {
+    throw new MessageException({
+        code: 400,
+        message: "Invalid clinic ID, clinic not found",
+    });
+}
+
+// Perform the partial update
+const updatedClinic = await clinicSchema.findByIdAndUpdate(
+    clinic_id,
+    clinicUpdates,
+    { new: true, runValidators: true } 
+);
+
+if (!updatedClinic) {
+    throw new MessageException({
+        code: 400,
+        message: "Failed to update clinic",
+    });
+}
+
+return updatedClinic;
+};
+
+
 
   // delete clinic with a specific ID
 const deleteClinic: MessageHandler = async (data) => {
@@ -85,7 +138,17 @@ const deleteClinic: MessageHandler = async (data) => {
     return "Clinic deleted";
   };
   
-  
+
+
+export default {
+  createClinic,
+  getThisClinic,
+  updateClinic,
+  deleteClinic,
+};
+
+
+
   
 /**
 / **
