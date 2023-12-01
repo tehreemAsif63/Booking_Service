@@ -31,6 +31,31 @@ router.get("/:id", async (req, res) => {
     }
 });
 
+*/
+
+const getSlot: MessageHandler = async (data) => {
+  const { slot_id } = data;
+  console.log("I am here", data.requestInfo?.user)
+  const slot = await SlotSchema.findById(slot_id);
+
+  if (!slot) {
+    throw new MessageException({
+      code: 400,
+      message: "Invalid slot ID",
+    });
+  }
+
+  if (slot === null) {
+    throw new MessageException({
+      code: 400,
+      message: "Slot does not exist",
+    });
+  }
+
+  return slot;
+};
+/*
+
 //Creating a new Slot - We will use it to make them available
 router.post("/", async (req, res) => {
     try {
