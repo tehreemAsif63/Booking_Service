@@ -54,6 +54,21 @@ const getSlot: MessageHandler = async (data) => {
 
   return slot;
 };
+
+//Get all slots
+const getSlots: MessageHandler = async () => {
+  const slots = await SlotSchema.find(); 
+
+  if (!slots || slots.length === 0) {
+    throw new MessageException({
+      code: 404,
+      message: "No slots found",
+    });
+  }
+
+  return slots;
+};
+
 /*
 
 //Creating a new Slot - We will use it to make them available
@@ -87,7 +102,7 @@ const createSlot: MessageHandler = async (data) => {
     });
   }
 
-  // validate the data of the slot
+  // validate the boolean values of the slot
   if (
     !(
       // assumes slots are avaliable and unbooked on creation
@@ -137,7 +152,29 @@ router.delete("/:id", async (req, res) => {
         res.status(404).json({ error: "Slot not found" });
     }
 });
+*/
+// delete slot with a specific ID
+const deleteSlot: MessageHandler = async (data) => {
+  const { slot_id } = data;
 
+  const slot = await SlotSchema.findByIdAndDelete(slot_id);
+
+  if (!slot) {
+    throw new MessageException({
+      code: 400,
+      message: "Invalid id",
+    });
+  }
+
+  if (slot === null) {
+    throw new MessageException({
+      code: 400,
+      message: "Slot does not exist",
+    });
+  }
+  return "Slot deleted";
+};
+/*
 //Patch method to change Availability of a specific Slot
 router.patch("/:id", async (req, res) => {
     try {
