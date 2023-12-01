@@ -1,3 +1,7 @@
+import SlotSchema, { Slot } from "../schemas/slots"
+import { MessageException } from "../exceptions/MessageException"
+import { MessageHandler, MessageData } from "../utilities/types-utils"
+
 /**const express = require("express");
 const router = require("express").Router();
 const Slots = require("../schemas/slots.js");
@@ -39,6 +43,61 @@ router.post("/", async (req, res) => {
     }
 });
 
+*/
+
+const createSlot: MessageHandler = async (data) => {
+  const { date, available, booked } =
+    data;
+
+  // validate the data of the slot
+  if (
+    !(
+      date && available && booked
+    )
+  ) {
+    // throw
+    throw new MessageException({
+      code: 403,
+      message: "Input missing data, All data required",
+    });
+  }
+
+  // validate the data of the slot
+  if (
+    !(
+      // assumes slots are avaliable and unbooked on creation
+      date && available == false && booked == true
+    )
+  ) {
+    // throw
+    throw new MessageException({
+      code: 403,
+      message: "Fix input; data is invalid",
+    });
+  }
+
+  // find a registered slot in DB
+  const registeredSlot = SlotSchema.find({ date });
+
+  // check if slot already registered in DB
+  if ((await registeredSlot).length > 0) {
+    throw new MessageException({
+      code: 403,
+      message: "Slot already exists for that time",
+    });
+  }
+
+  const slot = new SlotSchema({
+    date,
+    available, booked
+  });
+
+  slot.save();
+
+  return slot;
+};
+
+/*
 
 //Deleting a specific slot by ID - We will use it to make a slot unavailable
 router.delete("/:id", async (req, res) => {
