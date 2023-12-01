@@ -195,6 +195,31 @@ router.patch("/:id", async (req, res) => {
         res.status(400).json({ error: error.message });
     }
 });
+*/
+const updateSlot: MessageHandler = async (data) => {
+  const { slot_id, date, avaliable, booked } = data;
+  const slot = await SlotSchema.findByIdAndUpdate(
+    slot_id,
+    { date, avaliable, booked },
+    { new: true }
+  );
 
+  if (!slot) {
+    throw new MessageException({
+      code: 404,
+      message: "Slot not found for update",
+    });
+  }
+  return slot;
+};
+
+/*
 
 module.exports = router;*/
+export default {
+  createSlot,
+  getSlot,
+  getSlots,
+  deleteSlot,
+  updateSlot
+};
