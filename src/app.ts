@@ -1,6 +1,6 @@
 import mqtt from "mqtt";
 import mongoose from "mongoose";
-import slotsController from "./controllers/slots-controller";
+//import slotsController from "./controllers/slots-controller"
 import clinicController from "./controllers/clinics-controller"
 import {
   MessageData,
@@ -20,12 +20,12 @@ const messageMapping: { [key: string]: MessageHandler } = {
   "clinics/delete/:clinic_id": clinicController.deleteClinic,
   "clinics/delete": clinicController.deleteAllClinics,
 
-  "slots/create": slotsController.createSlot,
-  "slots/": slotsController. getSlots,
-  "slots/:slot_id": slotsController.getSlot,
-  "slots/update/:slot_id": slotsController.updateSlot,
-  "slots/delete/:slot_id": slotsController.deleteSlot,
-  "slots/delete": slotsController.deleteAllSlots,
+  //"slots/create": slotsController.createSlot,
+  //"slots/": slotsController. getSlots,
+  //"slots/:slot_id": slotsController.getSlot,
+  //"slots/update/:slot_id": slotsController.updateSlot,
+  //"slots/delete/:slot_id": slotsController.deleteSlot,
+  //"slots/delete": slotsController.deleteAllSlots,
 };
 
   

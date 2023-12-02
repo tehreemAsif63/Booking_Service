@@ -1,67 +1,25 @@
 import clinicSchema, { Clinic } from "../schemas/clinics";
 import { MessageException } from "../exceptions/MessageException";
-import { MessageHandler, MessageData } from "../utilities/types-utils";
+import { MessageHandler, RequestInfo} from "../utilities/types-utils";
 
-
-
-
-/*
-const isAdmin = (user) => {
-  Implement your logic to check if the user is an admin¨
-
-  ..............
-No need for creating a seperate metod
-just add a parameter to the main function besides data ex:(data,requestInfo)
-then paste this in the first line of the function 
-if (!requestInfo.user?.admin) {
+//Method for admin access check
+const checkAdminAccess = (requestInfo: RequestInfo) => {
+  if (!requestInfo.user?.admin) {
     throw new MessageException({
       code: 403,
-      message: "Forbidden",
+      message: "Forbidden. Only admins can perform this action.",
     });
   }
-  ................
-  return user && user.role === "admin";
 };
-
-const authenticateUser = (token) => {
-  // Implement your logic to authenticate the user using the token
-  // Verify the token using jwt.verify or any authentication mechanism
-  // Return user information if authenticated, otherwise throw an exception
-
-  .........
-  No need for that its already done in the api
-  ........
-
-
-  I left the code above so u can continue by urself :) good job just add as I showd u then test them in post man through the api
-  
-
-};*/
 
 
 //creating a clinic- POST
-const createClinic: MessageHandler = async (data) => {
+const createClinic: MessageHandler = async (data, requestInfo) => {
   
-    const { clinicName, address, workingDentists, userToken } =
-      data;
+    const { clinicName, address, workingDentists} = data;
   
-      // Authenticate the user
-      const user = authenticateUser(userToken);
-      if (!user) {
-          throw new MessageException({
-              code: 401,
-              message: "Unauthorized. User authentication failed.",
-          });
-      }
-  
-      // Check if the user is an admin
-      if (!isAdmin(user)) {
-          throw new MessageException({
-              code: 403,
-              message: "Forbidden. Only admins can create clinics.",
-          });
-      }
-  
+    // Check if the user is an admin
+      checkAdminAccess(requestInfo);
 
     // validate the data of the patient clinicName: address: workingDentists:
     if (!clinicName || !address || !workingDentists) {
@@ -124,7 +82,7 @@ try{
 
 
   // getting Clinic with a specific id- GET/:id
-const getClinic: MessageHandler = async (data) => {
+    const getClinic: MessageHandler = async (data) => {
     const { clinic_id } = data;
     const clinic = await clinicSchema.findById(clinic_id);
   
@@ -141,25 +99,11 @@ const getClinic: MessageHandler = async (data) => {
 
 
 // updateClinic fields -PATCH
-const updateClinic: MessageHandler = async (data) => {
-  const { clinic_id, clinicUpdates, userToken } = data;
-
-   //Authenticate the user
-    const user = authenticateUser(userToken);
-    if (!user) {
-        throw new MessageException({
-            code: 401,
-            message: "Unauthorized. User authentication failed.",
-        });
-    }
-
-    // Check if the user is an admin
-    if (!isAdmin(user)) {
-        throw new MessageException({
-            code: 403,
-            message: "Forbidden. Only admins can update clinics.",
-        });
-    }
+const updateClinic: MessageHandler = async (data, requestInfo) => {
+   const { clinic_id, clinicUpdates} = data;
+  
+  // Check if the user is an admin
+  checkAdminAccess(requestInfo);
 
   // Check if clinicUpdates is provided and not empty
   if (!clinic_id || !clinicUpdates || Object.keys(clinicUpdates).length === 0) {
@@ -198,63 +142,37 @@ return updatedClinic;
 
 
   // delete clinic with a specific ID
-const deleteClinic: MessageHandler = async (data) => {
-    const { clinic_id, userToken } = data;
+const deleteClinic: MessageHandler = async (data, requestInfo) => {
+    const { clinic_id} = data;
   
-     // Authenticate the user
-     const user = authenticateUser(userToken);
-     if (!user) {
-         throw new MessageException({
-             code: 401,
-             message: "Unauthorized. User authentication failed.",
-         });
-     }
- 
-     // Check if the user is an admin
-     if (!isAdmin(user)) {
-         throw new MessageException({
-             code: 403,
-             message: "Forbidden. Only admins can delete clinics.",
-         });
-     }
+   // Check if the user is an admin
+   checkAdminAccess(requestInfo);
 
-    const clinic = await clinicSchema.findByIdAndDelete(clinic_id);
-  
-    if (!clinic) {
+    
+
+    try {
+      const clinic = await clinicSchema.findByIdAndDelete(clinic_id);
+      return `Clinic deleted successfully.`;
+
+    } catch (error) {
       throw new MessageException({
-        code: 404,
-        message: "Not Found. Clinic does not exist",
+          code: 404,
+          message: "Not Found. Clinic does not exist.",
       });
     }
-  
-    return "204- Clinic deleted successfully";
-  };
-  
+  }
+    
 
   //Delete all clinics method
-  const deleteAllClinics: MessageHandler = async (data) => {
-    const { userToken } = data;
+  const deleteAllClinics: MessageHandler = async (data, requestInfo) => {
 
-    // Authenticate the user
-    const user = authenticateUser(userToken);
-    if (!user) {
-        throw new MessageException({
-            code: 401,
-            message: "Unauthorized. User authentication failed.",
-        });
-    }
-
-    // Check if the user is an admin
-    if (!isAdmin(user)) {
-        throw new MessageException({
-            code: 403,
-            message: "Forbidden. Only admins can delete clinics.",
-        });
-    }
+     // Check if the user is an admin
+     checkAdminAccess(requestInfo);
 
     try {
       const result = await clinicSchema.deleteMany({});
-      return `204- Deleted ${result.deletedCount} clinics`;
+      return `Deleted ${result.deletedCount} clinics`;
+
     } catch (error) {
       throw new MessageException({
           code: 500,
