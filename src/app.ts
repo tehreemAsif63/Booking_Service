@@ -1,6 +1,7 @@
 import mqtt from "mqtt";
 import mongoose from "mongoose";
-
+import slotsController from "./controllers/slots-controller";
+import clinicController from "./controllers/clinics-controller"
 import {
   MessageData,
   MessageHandler,
@@ -11,8 +12,31 @@ const mongoURI =
   process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/Bookings";
 const client = mqtt.connect(process.env.MQTT_URI || "mqtt://localhost:1883");
 
-const messageMapping: { [key: string]: MessageHandler } = {};
+const messageMapping: { [key: string]: MessageHandler } = {
+  "clinics/create": clinicsController.createClinic,
+  "clinics/": clinicsController.getAllClinics,
+  "clinics/:clinic_id": clinicsController.getClinic,
+  "clinics/update/:clinic_id": clinicsController.updateClinic,
+  "clinics/delete/:clinic_id": clinicsController.deleteClinic,
+  "clinics/delete": clinicsController.deleteAllClinics,
 
+ 
+ 
+ 
+ 
+ 
+  "slots/create": slotsController.createSlot,
+  "slots/": slotsController. getSlots,
+  "slots/:slot_id": slotsController.getSlot,
+  "slots/update/:slot_id": slotsController.updateSlot,
+  "slots/delete/:slot_id": slotsController.deleteSlot,
+  "slots/delete": slotsController.deleteAllSlots,
+};
+
+  
+ 
+  
+  
 client.on("connect", () => {
   client.subscribe("auth/#");
 });

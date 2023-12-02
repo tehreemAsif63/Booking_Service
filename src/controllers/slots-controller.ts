@@ -1,6 +1,10 @@
-import SlotSchema, { Slot } from "../schemas/slots"
-import { MessageException } from "../exceptions/MessageException"
-import { MessageHandler, MessageData } from "../utilities/types-utils"
+import SlotSchema, { Slot } from "../schemas/slots";
+import { MessageException } from "../exceptions/MessageException";
+import {
+  MessageHandler,
+  MessageData,
+  RequestInfo,
+} from "../utilities/types-utils";
 
 /**const express = require("express");
 const router = require("express").Router();
@@ -33,9 +37,10 @@ router.get("/:id", async (req, res) => {
 
 */
 
-const getSlot: MessageHandler = async (data) => {
+const getSlot: MessageHandler = async (data, requestInfo) => {
+  
+
   const { slot_id } = data;
-  console.log("I am here", data.requestInfo?.user)
   const slot = await SlotSchema.findById(slot_id);
 
   if (!slot) {
@@ -57,7 +62,7 @@ const getSlot: MessageHandler = async (data) => {
 
 //Get all slots
 const getSlots: MessageHandler = async () => {
-  const slots = await SlotSchema.find(); 
+  const slots = await SlotSchema.find();
 
   if (!slots || slots.length === 0) {
     throw new MessageException({
@@ -69,32 +74,24 @@ const getSlots: MessageHandler = async () => {
   return slots;
 };
 
-/*
 
-//Creating a new Slot - We will use it to make them available
-router.post("/", async (req, res) => {
-    try {
-        const newSlot = new Slots( { time: req.body.time, availability: req.body.availability } )
-        const savedSlot = await newSlot.save();
 
-        res.status(200).json(savedSlot);
-    } catch (error) {
-        res.status(404).json({ error: error.message });
-    }
-});
-
-*/
-
-const createSlot: MessageHandler = async (data) => {
-  const { date, available, booked } =
-    data;
+const createSlot: MessageHandler = async (data,requestInfo) => {
+  if (requestInfo.user?.userType!=="dentist") {
+    throw new MessageException({
+      code: 403,
+      message: "Forbidden",
+    });
+  }
+  
+  const { date, available, booked, clinicData = {
+    dentistID:requestInfo.user.id,
+    clinicID: data.clinic_id,
+    date: new Date(),
+  } } = data;
 
   // validate the data of the slot
-  if (
-    !(
-      date && available && booked
-    )
-  ) {
+  if (!(date && available && booked&&clinicData)) {
     // throw
     throw new MessageException({
       code: 403,
@@ -106,7 +103,7 @@ const createSlot: MessageHandler = async (data) => {
   if (
     !(
       // assumes slots are avaliable and unbooked on creation
-      date && available == false && booked == true
+      (date && available == false && booked == true)
     )
   ) {
     // throw
@@ -129,7 +126,9 @@ const createSlot: MessageHandler = async (data) => {
 
   const slot = new SlotSchema({
     date,
-    available, booked
+    available,
+    booked,
+    clinicData
   });
 
   slot.save();
@@ -137,22 +136,7 @@ const createSlot: MessageHandler = async (data) => {
   return slot;
 };
 
-/*
 
-//Deleting a specific slot by ID - We will use it to make a slot unavailable
-router.delete("/:id", async (req, res) => {
-    try {
-        const id = req.params.id;
-        const deletedSlot = await Slots.findByIdAndDelete(id);
-        if(!deletedSlot){ 
-                         return res.status(404).json({ error: "Slot not found" }); }
-        
-        res.status(204).send();
-    } catch (error) {
-        res.status(404).json({ error: "Slot not found" });
-    }
-});
-*/
 // delete slot with a specific ID
 const deleteSlot: MessageHandler = async (data) => {
   const { slot_id } = data;
@@ -174,27 +158,10 @@ const deleteSlot: MessageHandler = async (data) => {
   }
   return "Slot deleted";
 };
+
 /*
-//Patch method to change Availability of a specific Slot
-router.patch("/:id", async (req, res) => {
-    try {
-
-        //Will first check if the slot even exists before editing
-        const slot = await Slots.findById(req.params.id);
-
-        if(!slot){ 
-            return res.status(404).json({ error: "Slot not found" }); }
-
-    //To turn Availability On or Off(Toggle)
-        slot.availability= !slot.availability;
-        const updatedSlot = await slot.save();
-        
-    
-        res.status(200).json(updatedSlot);
-    } catch (error) {
-        res.status(400).json({ error: error.message });
-    }
-});
+It should be bookSlot
+and another one to UnbookSlot
 */
 const updateSlot: MessageHandler = async (data) => {
   const { slot_id, date, avaliable, booked } = data;
@@ -213,13 +180,31 @@ const updateSlot: MessageHandler = async (data) => {
   return slot;
 };
 
-/*
+const deleteAllSlots: MessageHandler = async (data, requestInfo) => {
+  if (requestInfo.user?.userType!=="dentist") {
+    throw new MessageException({
+      code: 403,
+      message: "Forbidden",
+    });
+  }
 
-module.exports = router;*/
+  await SlotSchema.deleteMany(data);
+
+  if (SlotSchema === null) {
+    throw new MessageException({
+      code: 400,
+      message: "DataBase already empty",
+    });
+  }
+
+  return "All Slots deleted";
+};
+
 export default {
   createSlot,
   getSlot,
   getSlots,
   deleteSlot,
-  updateSlot
+  updateSlot,
+  deleteAllSlots
 };

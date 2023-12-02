@@ -24,5 +24,5 @@ const clinicSchema = new Schema({
     ],
 });
 
-export default mongoose.model("Clinics", clinicSchema);
+export default mongoose.model("Clinic", clinicSchema);
 export type Clinic=InferSchemaType<typeof clinicSchema>;
