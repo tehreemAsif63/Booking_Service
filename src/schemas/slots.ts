@@ -1,14 +1,15 @@
 import { InferSchemaType } from "mongoose";
-
+import clinics from "./clinics"
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
+
 
 /**
  * time: The date and time of the registered slot
  * availability: The availability of the registered slot
  */
 const slotSchema = new Schema({
-    time: {
+    date: {
         type: Date,
         required: [true, "Date and time must be registered"]
     },
@@ -19,7 +20,13 @@ const slotSchema = new Schema({
     booked: {
         type: Boolean,
         default: false
-    }
+    },
+    clinicId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: clinics,
+        required: true,
+      }
+
 });
 
 export default mongoose.model("Slot", slotSchema);
