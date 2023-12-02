@@ -163,11 +163,30 @@ const deleteSlot: MessageHandler = async (data) => {
 It should be bookSlot
 and another one to UnbookSlot
 */
-const updateSlot: MessageHandler = async (data) => {
-  const { slot_id, date, avaliable, booked } = data;
+const bookSlot: MessageHandler = async (data) => {
+  var { slot_id, booked } = data;
+  booked = true
   const slot = await SlotSchema.findByIdAndUpdate(
     slot_id,
-    { date, avaliable, booked },
+    { booked },
+    { new: true }
+  );
+
+  if (!slot) {
+    throw new MessageException({
+      code: 404,
+      message: "Slot not found for update",
+    });
+  }
+  return slot;
+};
+
+const unbookSlot: MessageHandler = async (data) => {
+  var { slot_id, booked } = data;
+  booked = false
+  const slot = await SlotSchema.findByIdAndUpdate(
+    slot_id,
+    { booked },
     { new: true }
   );
 
@@ -205,6 +224,7 @@ export default {
   getSlot,
   getSlots,
   deleteSlot,
-  updateSlot,
+  bookSlot,
+  unbookSlot,
   deleteAllSlots
 };
