@@ -7,11 +7,20 @@ import {
   MessagePayload,
 } from "./utilities/types-utils";
 import { MessageException } from "./exceptions/MessageException";
+import clinicsController from "./controllers/clinics-controller";
 const mongoURI =
   process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/Bookings";
 const client = mqtt.connect(process.env.MQTT_URI || "mqtt://localhost:1883");
 
-const messageMapping: { [key: string]: MessageHandler } = {};
+const messageMapping: { [key: string]: MessageHandler } = {
+  "clinics/create": clinicsController.createClinic,
+  "clinics/": clinicsController.getAllClinics,
+  "clinics/:clinic_id": clinicsController.getClinic,
+  "clinics/update/:clinic_id": clinicsController.updateClinic,
+  "clinics/delete/:clinic_id": clinicsController.deleteClinic,
+  "clinics/delete": clinicsController.deleteAllClinics,
+
+};
 
 client.on("connect", () => {
   client.subscribe("auth/#");

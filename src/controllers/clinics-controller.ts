@@ -5,9 +5,21 @@ import { MessageHandler, MessageData } from "../utilities/types-utils";
 
 
 
-
+/*
 const isAdmin = (user) => {
-  // Implement your logic to check if the user is an admin
+  Implement your logic to check if the user is an admin¨
+
+  ..............
+No need for creating a seperate metod
+just add a parameter to the main function besides data ex:(data,requestInfo)
+then paste this in the first line of the function 
+if (!requestInfo.user?.admin) {
+    throw new MessageException({
+      code: 403,
+      message: "Forbidden",
+    });
+  }
+  ................
   return user && user.role === "admin";
 };
 
@@ -15,11 +27,21 @@ const authenticateUser = (token) => {
   // Implement your logic to authenticate the user using the token
   // Verify the token using jwt.verify or any authentication mechanism
   // Return user information if authenticated, otherwise throw an exception
-};
+
+  .........
+  No need for that its already done in the api
+  ........
+
+
+  I left the code above so u can continue by urself :) good job just add as I showd u then test them in post man through the api
+  
+
+};*/
 
 
 //creating a clinic- POST
 const createClinic: MessageHandler = async (data) => {
+  
     const { clinicName, address, workingDentists, userToken } =
       data;
   
@@ -74,7 +96,7 @@ const createClinic: MessageHandler = async (data) => {
 
 
 //getting all clinics- GET 
-const getAllClinic: MessageHandler = async (data) => {
+const getAllClinics: MessageHandler = async (data) => {
 
 try{ 
   const allClinics = await clinicSchema.find({});
@@ -102,7 +124,7 @@ try{
 
 
   // getting Clinic with a specific id- GET/:id
-const getThisClinic: MessageHandler = async (data) => {
+const getClinic: MessageHandler = async (data) => {
     const { clinic_id } = data;
     const clinic = await clinicSchema.findById(clinic_id);
   
@@ -245,8 +267,8 @@ const deleteClinic: MessageHandler = async (data) => {
 
 export default {
   createClinic,
-  getAllClinic,
-  getThisClinic,
+  getAllClinics,
+  getClinic,
   updateClinic,
   deleteClinic,
   deleteAllClinics,
