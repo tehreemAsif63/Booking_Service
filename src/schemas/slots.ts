@@ -1,6 +1,6 @@
 import { InferSchemaType } from "mongoose";
 import clinics from "./clinics"
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 const Schema = mongoose.Schema;
 
 
@@ -24,6 +24,10 @@ const slotSchema = new Schema({
     clinicId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: clinics,
+        required: true,
+      },
+      dentistId: {
+        type: String,
         required: true,
       }
 

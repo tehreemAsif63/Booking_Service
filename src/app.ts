@@ -14,21 +14,17 @@ const client = mqtt.connect(process.env.MQTT_URI || "mqtt://localhost:1883");
 
 const messageMapping: { [key: string]: MessageHandler } = {
   "clinics/create": clinicsController.createClinic,
-  "clinics/": clinicsController.getAllClinics,
+  "clinics/all": clinicsController.getAllClinics,
   "clinics/:clinic_id": clinicsController.getClinic,
   "clinics/update/:clinic_id": clinicsController.updateClinic,
   "clinics/delete/:clinic_id": clinicsController.deleteClinic,
   "clinics/delete": clinicsController.deleteAllClinics,
-
- 
- 
- 
- 
+ //--------------
   "slots/create": slotsController.createSlot,
-  "slots/": slotsController. getSlots,
+  "slots/all": slotsController. getSlots,
   "slots/:slot_id": slotsController.getSlot,
-  "slots/book/:slot_id": slotsController.bookSlot,
-  "slots/unbook/:slot_id": slotsController.unbookSlot,
+  "slots/:slot_id/book": slotsController.bookSlot,
+  "slots/:slot_id/unbook": slotsController.unbookSlot,
   "slots/delete/:slot_id": slotsController.deleteSlot,
   "slots/delete": slotsController.deleteAllSlots,
 };
@@ -38,7 +34,8 @@ const messageMapping: { [key: string]: MessageHandler } = {
   
   
 client.on("connect", () => {
-  client.subscribe("auth/#");
+  client.subscribe("clinics/#");
+  client.subscribe("slots/#")
 });
 
 client.on("message", async (topic, message) => {
