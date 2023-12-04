@@ -1,117 +1,193 @@
-/**const router = require("express").Router();
-const Clinics = require("../schemas/clinics.js");
-const { assertAdmin } = require("../utilities/assertAuthority.js");
+import clinicSchema, { Clinic } from "../schemas/clinics";
+import { MessageException } from "../exceptions/MessageException";
+import { MessageHandler, RequestInfo} from "../utilities/types-utils";
 
-/ **
- * Get /clinics
- * @summary Returns all clinics
- * @return {object} Successful Response: 200
- * @return {object} Clinics not found: 404
- * /
-router.get("/", async function(req, res){
-    const clinics = await Clinics.find().select("-__v");
-    if (clinics.length === 0) {
-        return res.status(404).json({
-            message: "No clinics are registered to the system!!"
-        })
-    }
-    return res.status(200).send(clinics);
-})
-
-/ **
- * Get /clinics/{id}
- * @summary Returns a certain clinic by id
- * @return {object} Successful Response: 200
- * @return {object} Clinic not found: 404
- * /
-router.get("/:id", async function(req, res){
-    const clinic = await Clinics.findOne({ id: req.params._id }).select("-__v");
-    if (clinic && !clinic._id) {
-        return res.status(404).json({
-            message: "The following clinic does not exist."
-        })
-    }
-    return res.status(200).send(clinic);
-})
-
-/ **
- * Post /clinics
- * @summary Creates a new clinic
- * @return {object} Successful Request (Clinic created): 201
- * @return {object} Bad Request Response: 400
- * /
-router.post("/", async function(req, res) {
-    const newClinic = new Clinics({
-        clinicName: req.body.clinicName,
-        address: req.body.address
+//Method for admin access check
+const checkAdminAccess = (requestInfo: RequestInfo) => {
+  if (!requestInfo.user?.admin) {
+    throw new MessageException({
+      code: 403,
+      message: "Forbidden. Only admins can perform this action.",
     });
-
-    console.log(newClinic);
-
-    newClinic.save()
-        .then(savedClinic => {
-            return res.status(201).json({
-                message: "Clinic successfully created :)",
-                clinic: savedClinic
-            });
-        })
-        .catch(err => {
-            if (err.code === 11000) {
-                return res.status(400).json({
-                    title: "Error",
-                    message: "A clinic with the same address already exists!!"
-                });
-            } else {
-                console.error("Error saving clinic:", err);
-                return res.status(500).json({
-                    title: "Error",
-                    message: "Internal Server Error"
-                });
-            }
-        });
-});
+  }
+};
 
 
-/ **
- * Delete /clinics/{id}
- * @summary Delete a certain clinic by using id
- * @return {object} Successful response: 204
- * @return {object} Not Authorized (Not logged in): 401
- * @return {object} No permission to delete the account: 403
- * @return {object} Clinic with the id does not exist: 404
- * /
-router.delete("/:id", async function(req, res){
-    const clinicId = req.params.id;
-    const clinic = await Clinics.findOne({ id: clinicId }).select("-__v");
+//creating a clinic- POST
+const createClinic: MessageHandler = async (data, requestInfo) => {
+  
+    const { clinicName, address, workingDentists} = data;
+  
+    // Check if the user is an admin
+      checkAdminAccess(requestInfo);
+
+    // validate the data of the patient clinicName: address: workingDentists:
+    if (!clinicName || !address || !workingDentists) {
+      throw new MessageException({
+          code: 403,
+          message: "Input missing data, All input fields are required to be filled.",
+      });
+     }
+    
+    // find a registered Clinic in DB
+    const registeredClinic = await clinicSchema.find({ clinicName, address });
+    // check if clinic already registered in DB
+    if ((await registeredClinic).length > 0) {
+      throw new MessageException({
+        code: 403,
+        message: "Forbidden. Clinic already exists",
+      });
+    }
+     // Create a new clinic
+     const newClinic = new clinicSchema({
+      clinicName,
+      address,
+      workingDentists,
+  });
+ 
+   // Save the clinic to the database
+   await newClinic.save();
+   return newClinic;
+};
+
+
+
+
+//getting all clinics- GET 
+const getAllClinics: MessageHandler = async (data) => {
+
+try{ 
+  const allClinics = await clinicSchema.find({});
+
+    // Check if any clinic exists
+    if (allClinics.length > 0) {
+      return allClinics;
+    } else {
+      throw new MessageException({
+        code: 404,
+        message: "No clinic found",
+      });
+    }
+  
+} catch (error) {
+    throw new MessageException({
+      code: 500,
+      message: "Failed to find clinics",
+    });
+}
+};
+
+
+
+
+
+  // getting Clinic with a specific id- GET/:id
+    const getClinic: MessageHandler = async (data) => {
+    const { clinic_id } = data;
+    const clinic = await clinicSchema.findById(clinic_id);
+  
     if (!clinic) {
-        return res.status(404).json({
-            message: "User does not exist!!"
-        })
+      throw new MessageException({
+        code: 404,
+        message: "Not Found. Clinic does not exists.",
+      });
     }
-    await clinic.deleteOne();
-    res.json({
-        message: "Clinic deleted successfully"
+  
+    return clinic;
+  };
+
+
+
+// updateClinic fields -PATCH
+const updateClinic: MessageHandler = async (data, requestInfo) => {
+   const { clinic_id, clinicUpdates} = data;
+  
+  // Check if the user is an admin
+  checkAdminAccess(requestInfo);
+
+  // Check if clinicUpdates is provided and not empty
+  if (!clinic_id || !clinicUpdates || Object.keys(clinicUpdates).length === 0) {
+    throw new MessageException({
+        code: 400,
+        message: "Bad Request. Invalid request data",
     });
-})
+}
 
-/ **
- * Delete /clinics
- * @summary Delete every clinics
- * @return {object} Successful response: 200
- * @return {object} Not authorized: 403
- * /
-router.delete("/", async function (req, res) {
+// Check if the clinic with the given ID exists
+const existingClinic = await clinicSchema.findById(clinic_id);
+if (!existingClinic) {
+    throw new MessageException({
+        code: 400,
+        message: "Not Found. Clinic not found",
+    });
+}
+
+// Perform the partial update
+const updatedClinic = await clinicSchema.findByIdAndUpdate(
+    clinic_id,
+    clinicUpdates,
+    { new: true, runValidators: true } 
+);
+
+if (!updatedClinic) {
+    throw new MessageException({
+        code: 500,
+        message: "Internal Server Error. Failed to update clinic",
+    });
+}
+
+return updatedClinic;
+};
+
+
+
+  // delete clinic with a specific ID
+const deleteClinic: MessageHandler = async (data, requestInfo) => {
+    const { clinic_id} = data;
+  
+   // Check if the user is an admin
+   checkAdminAccess(requestInfo);
+
+    
+
     try {
-        const clinics = await Clinics.find().select("-__v -clinicName");
-        await Clinics.deleteMany();
-        return res.status(204).send(clinics);
-    } catch (error) {
-        console.error("Error deleting clinics:", error);
-        return res.status(500).json({
-            title: "Error",
-            message: "Internal Server Error"
-        });
-    }
-});
+      const clinic = await clinicSchema.findByIdAndDelete(clinic_id);
+      return `Clinic deleted successfully.`;
 
-module.exports = router;**/
+    } catch (error) {
+      throw new MessageException({
+          code: 404,
+          message: "Not Found. Clinic does not exist.",
+      });
+    }
+  }
+    
+
+  //Delete all clinics method
+  const deleteAllClinics: MessageHandler = async (data, requestInfo) => {
+
+     // Check if the user is an admin
+     checkAdminAccess(requestInfo);
+
+    try {
+      const result = await clinicSchema.deleteMany({});
+      return `Deleted ${result.deletedCount} clinics`;
+
+    } catch (error) {
+      throw new MessageException({
+          code: 500,
+          message: "Failed to delete clinics",
+      });
+    }
+  }
+
+
+
+export default {
+  createClinic,
+  getAllClinics,
+  getClinic,
+  updateClinic,
+  deleteClinic,
+  deleteAllClinics,
+};
