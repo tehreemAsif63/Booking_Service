@@ -23,8 +23,9 @@ const messageMapping: { [key: string]: MessageHandler } = {
   "slots/create": slotsController.createSlot,
   "slots/all": slotsController. getSlots,
   "slots/:slot_id": slotsController.getSlot,
+  "slots/update/:slot_id": slotsController.updateSlot,
   "slots/:slot_id/book": slotsController.bookSlot,
-  "slots/:slot_id/unbook": slotsController.unbookSlot,
+  "slots/:slot_id/unbook": slotsController.unBookSlot,
   "slots/delete/:slot_id": slotsController.deleteSlot,
   "slots/delete": slotsController.deleteAllSlots,
 };
@@ -47,7 +48,7 @@ client.on("message", async (topic, message) => {
     ) as MessagePayload;
     try {
       const result = await handler(payload, requestInfo);
-      client.publish(responseTopic, JSON.stringify(result), { qos: 2 });
+      client.publish(responseTopic, JSON.stringify({data:result}), { qos: 2 });
     } catch (error) {
       console.log(error);
       if (error instanceof MessageException) {

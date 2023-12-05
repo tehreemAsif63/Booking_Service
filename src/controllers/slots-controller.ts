@@ -1,4 +1,5 @@
 import SlotSchema, { Slot } from "../schemas/slots";
+import clinicSchema, { Clinic } from "../schemas/clinics";
 import { MessageException } from "../exceptions/MessageException";
 import {
   MessageHandler,
@@ -6,11 +7,61 @@ import {
   RequestInfo,
 } from "../utilities/types-utils";
 
-*/
+
+const createSlot: MessageHandler = async (data, requestInfo) => {
+  if (requestInfo.user?.userType !== "dentist") {
+    throw new MessageException({
+      code: 403,
+      message: "Forbidden",
+    });
+  }
+
+  if (!requestInfo.user?.clinic_id) {
+    throw new MessageException({
+      code: 403,
+      message: "To be able to create a slot ,you have to be assigned to a clinic",
+    });
+  }
+
+
+  const { date } = data;
+
+  // validate the data of the slot
+  if ( !date ) {
+    // throw
+    throw new MessageException({
+      code: 403,
+      message: "Input missing data, All data required",
+    });
+  }
+
+  const clinic_id= requestInfo.user.clinic_id;
+  const dentist_id=requestInfo.user.id
+
+  // find a registered slot in DB
+  const registeredSlot = SlotSchema.find({ date,clinic_id,dentist_id });
+
+  // check if slot already registered in DB
+  if ((await registeredSlot).length > 0) {
+    throw new MessageException({
+      code: 403,
+      message: "Slot already exists for that time",
+    });
+  }
+
+  const slot = new SlotSchema({
+    date,
+    booked:false,
+    dentist_id,
+    clinic_id,
+  });
+
+  slot.save();
+
+  return slot;
+};
 
 const getSlot: MessageHandler = async (data, requestInfo) => {
-  
-
   const { slot_id } = data;
   const slot = await SlotSchema.findById(slot_id);
 
@@ -45,68 +96,50 @@ const getSlots: MessageHandler = async () => {
   return slots;
 };
 
-
-
-const createSlot: MessageHandler = async (data,requestInfo) => {
-  if (requestInfo.user?.userType!=="dentist") {
+// updateSlot fields -PATCH
+const updateSlot: MessageHandler = async (data, requestInfo) => {
+  if (requestInfo.user?.userType !== "dentist") {
     throw new MessageException({
       code: 403,
-      message: "Forbidden",
+      message: "Forbidden. Only admins can perform this action.",
     });
   }
-  
-  const { date, available, booked, clinicData = {
-    dentistID:requestInfo.user.id,
-    clinicID: data.clinic_id,
-    date: new Date(),
-  } } = data;
-
-  // validate the data of the slot
-  if (!(date && available && booked&&clinicData)) {
-    // throw
+  const { slot_id, date, dentistId, clinic_id } = data;
+  console.log("slotID", slot_id);
+  // Check if the slot with the given ID exists
+  const existingSlot = await SlotSchema.findById(slot_id);
+  if (!existingSlot) {
     throw new MessageException({
-      code: 403,
-      message: "Input missing data, All data required",
+      code: 400,
+      message: " Slot not found",
     });
   }
 
-  // validate the boolean values of the slot
-  if (
-    !(
-      // assumes slots are avaliable and unbooked on creation
-      (date && available == false && booked == true)
-    )
-  ) {
-    // throw
+  // Check if slotUpdates that's provided and not empty
+  if (!date || !dentistId || !clinic_id) {
     throw new MessageException({
-      code: 403,
-      message: "Fix input; data is invalid",
+      code: 422,
+      message:
+        "Input missing data, All input fields are required to be filled.",
     });
   }
 
-  // find a registered slot in DB
-  const registeredSlot = SlotSchema.find({ date });
+  // Perform the partial update
+  const updatedSlot = await SlotSchema.findByIdAndUpdate(
+    slot_id,
+    { date, dentistId, clinic_id },
+    { new: true, runValidators: true }
+  );
 
-  // check if slot already registered in DB
-  if ((await registeredSlot).length > 0) {
+  if (!updatedSlot) {
     throw new MessageException({
-      code: 403,
-      message: "Slot already exists for that time",
+      code: 500,
+      message: " Failed to update slot",
     });
   }
 
-  const slot = new SlotSchema({
-    date,
-    available,
-    booked,
-    clinicData
-  });
-
-  slot.save();
-
-  return slot;
+  return updatedSlot;
 };
-
 
 // delete slot with a specific ID
 const deleteSlot: MessageHandler = async (data) => {
@@ -136,7 +169,7 @@ and another one to UnbookSlot
 */
 const bookSlot: MessageHandler = async (data) => {
   var { slot_id, booked } = data;
-  booked = true
+  booked = true;
   const slot = await SlotSchema.findByIdAndUpdate(
     slot_id,
     { booked },
@@ -152,9 +185,9 @@ const bookSlot: MessageHandler = async (data) => {
   return slot;
 };
 
-const unbookSlot: MessageHandler = async (data) => {
+const unBookSlot: MessageHandler = async (data) => {
   var { slot_id, booked } = data;
-  booked = false
+  booked = false;
   const slot = await SlotSchema.findByIdAndUpdate(
     slot_id,
     { booked },
@@ -171,31 +204,31 @@ const unbookSlot: MessageHandler = async (data) => {
 };
 
 const deleteAllSlots: MessageHandler = async (data, requestInfo) => {
-  if (requestInfo.user?.userType!=="dentist") {
+  if (requestInfo.user?.userType !== "dentist") {
     throw new MessageException({
       code: 403,
       message: "Forbidden",
     });
   }
 
-  await SlotSchema.deleteMany(data);
-
-  if (SlotSchema === null) {
+  if (SlotSchema.length >= 1) {
+    await SlotSchema.deleteMany(data);
+    return "All Slots deleted";
+  } else {
     throw new MessageException({
       code: 400,
       message: "DataBase already empty",
     });
   }
-
-  return "All Slots deleted";
 };
 
 export default {
   createSlot,
   getSlot,
   getSlots,
+  updateSlot,
   deleteSlot,
   bookSlot,
-  unbookSlot,
-  deleteAllSlots
+  unBookSlot,
+  deleteAllSlots,
 };
