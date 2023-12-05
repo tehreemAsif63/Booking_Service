@@ -17,10 +17,10 @@ const createClinic: MessageHandler = async (data, requestInfo) => {
   // Check if the user is an admin
   checkAdminAccess(requestInfo);
 
-  const { clinicName, address, workingDentists=[] } = data;
+  const { clinicName, address, workingDentists = [] } = data;
 
   // validate the data of the patient clinicName: address: workingDentists:
-  if (!clinicName || !address ) {
+  if (!clinicName || !address) {
     throw new MessageException({
       code: 422,
       message:
@@ -34,7 +34,7 @@ const createClinic: MessageHandler = async (data, requestInfo) => {
   if ((await registeredClinic).length > 0) {
     throw new MessageException({
       code: 422,
-      message: "Forbidden. Clinic already exists",
+      message: " Clinic already exists",
     });
   }
   // Create a new clinic
@@ -46,9 +46,8 @@ const createClinic: MessageHandler = async (data, requestInfo) => {
 
   // Save the clinic to the database
   await newClinic.save();
-  return newClinic.id;
+  return newClinic;
 };
-
 
 //getting all clinics- GET
 const getAllClinics: MessageHandler = async (data) => {
@@ -84,21 +83,22 @@ const getClinic: MessageHandler = async (data) => {
     });
   }
 
-  return clinic;
+  return  {clinic};
 };
 
 // updateClinic fields -PATCH
 const updateClinic: MessageHandler = async (data, requestInfo) => {
-  const { clinic_id, clinicUpdates } = data;
+  const {clinic_id, clinicName, address,workingDentists = [] } = data;
 
   // Check if the user is an admin
   checkAdminAccess(requestInfo);
 
   // Check if clinicUpdates is provided and not empty
-  if (!clinic_id || !clinicUpdates || Object.keys(clinicUpdates).length === 0) {
+  if (!clinicName || !address) {
     throw new MessageException({
-      code: 400,
-      message: "Bad Request. Invalid request data",
+      code: 422,
+      message:
+        "Input missing data, All input fields are required to be filled.",
     });
   }
 
@@ -114,7 +114,7 @@ const updateClinic: MessageHandler = async (data, requestInfo) => {
   // Perform the partial update
   const updatedClinic = await clinicSchema.findByIdAndUpdate(
     clinic_id,
-    clinicUpdates,
+    {clinicName, address, workingDentists : [] },
     { new: true, runValidators: true }
   );
 
@@ -135,15 +135,16 @@ const deleteClinic: MessageHandler = async (data, requestInfo) => {
   // Check if the user is an admin
   checkAdminAccess(requestInfo);
 
-  try {
+  
     const clinic = await clinicSchema.findByIdAndDelete(clinic_id);
-    return `Clinic deleted successfully.`;
-  } catch (error) {
+    
+  if (!clinic) {
     throw new MessageException({
       code: 404,
       message: "Not Found. Clinic does not exist.",
     });
   }
+  return `Clinic deleted successfully.`;
 };
 
 //Delete all clinics method
@@ -151,15 +152,16 @@ const deleteAllClinics: MessageHandler = async (data, requestInfo) => {
   // Check if the user is an admin
   checkAdminAccess(requestInfo);
 
-  try {
-    const result = await clinicSchema.deleteMany({});
-    return `Deleted ${result.deletedCount} clinics`;
-  } catch (error) {
+  const result = await clinicSchema.deleteMany(data);
+
+  if (clinicSchema === null) {
     throw new MessageException({
       code: 500,
-      message: "Failed to delete clinics",
+      message: "Data Base Already empty",
     });
   }
+
+  return `Deleted ${result.deletedCount} clinics`;
 };
 
 export default {
