@@ -157,7 +157,7 @@ const deleteAllClinics: MessageHandler = async (data, requestInfo) => {
   if (clinicSchema === null) {
     throw new MessageException({
       code: 500,
-      message: "Data Base Already empty",
+      message: "Data Base is Already empty",
     });
   }
 
