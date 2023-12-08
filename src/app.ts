@@ -2,6 +2,7 @@ import mqtt from "mqtt";
 import mongoose from "mongoose";
 import slotsController from "./controllers/slots-controller";
 import clinicsController from "./controllers/clinics-controller";
+import emergencySlotsController from "./controllers/emergencySlots-controller";
 import {
   MessageData,
   MessageHandler,
@@ -29,6 +30,18 @@ const messageMapping: { [key: string]: MessageHandler } = {
   "slots/:slot_id/unbook": slotsController.unBookSlot,
   "slots/delete/:slot_id": slotsController.deleteSlot,
   "slots/delete": slotsController.deleteAllSlots,
+  //--------------
+  "emergency-slots/create": emergencySlotsController.createEmergencySlot,
+  "emergency-slots/all": emergencySlotsController.getEmergencySlots,
+  "emergency-slots/:slot_id": emergencySlotsController.getEmergencySlot,
+  "emergency-slots/update/:slot_id":
+    emergencySlotsController.updateEmergencySlot,
+  "emergency-slots/:slot_id/book": emergencySlotsController.bookEmergencySlot,
+  "emergency-slots/:slot_id/unbook":
+    emergencySlotsController.unbookEmergencySlot,
+  "emergency-slots/delete/:slot_id":
+    emergencySlotsController.deleteEmergencySlot,
+  "emergency-slots/delete": emergencySlotsController.deleteAllEmergencySlots,
 };
 
 client.on("connect", () => {
