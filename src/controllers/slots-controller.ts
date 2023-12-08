@@ -168,13 +168,25 @@ It should be bookSlot
 and another one to UnbookSlot
 */
 const bookSlot: MessageHandler = async (data) => {
-  var { slot_id, booked } = data;
+  var { slot_id, booked, patient_id } = data;
   booked = true;
-  const slot = await SlotSchema.findByIdAndUpdate(
+  var slot = null
+  // verify it's a real object id
+  const mongoose = require('mongoose');
+  
+  if(mongoose.Types.ObjectId.isValid(patient_id)){
+    slot = await SlotSchema.findByIdAndUpdate(
     slot_id,
-    { booked },
+    { booked, patient_id},
     { new: true }
   );
+  } else{
+    throw new MessageException({
+      code: 400,
+      message: "Valid patient ID needs to be specified",
+    });
+  }
+  
 
   if (!slot) {
     throw new MessageException({
@@ -188,9 +200,10 @@ const bookSlot: MessageHandler = async (data) => {
 const unBookSlot: MessageHandler = async (data) => {
   var { slot_id, booked } = data;
   booked = false;
+  const patient_id = null
   const slot = await SlotSchema.findByIdAndUpdate(
     slot_id,
-    { booked },
+    { booked , patient_id},
     { new: true }
   );
 
