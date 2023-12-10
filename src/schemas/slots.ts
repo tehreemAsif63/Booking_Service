@@ -31,6 +31,14 @@ const slotSchema = new Schema({
     type: String,
     required: false,
   },
+  description: {
+    type: String,
+    required: false,
+  },
+  booking_type: {
+    type: String,
+    required: false,
+  },
 });
 
 export default mongoose.model("Slot", slotSchema);

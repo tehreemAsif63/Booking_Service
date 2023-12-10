@@ -104,7 +104,7 @@ const updateSlot: MessageHandler = async (data, requestInfo) => {
       message: "Forbidden. Only admins can perform this action.",
     });
   }
-  const { slot_id, date, dentistId, clinic_id } = data;
+  const { slot_id, date, dentistId, clinic_id, patient_id, description,booking_type } = data;
   console.log("slotID", slot_id);
   // Check if the slot with the given ID exists
   const existingSlot = await SlotSchema.findById(slot_id);
@@ -127,7 +127,12 @@ const updateSlot: MessageHandler = async (data, requestInfo) => {
   // Perform the partial update
   const updatedSlot = await SlotSchema.findByIdAndUpdate(
     slot_id,
-    { date, dentistId, clinic_id },
+    { date,
+      dentist_id: dentistId,
+      clinic_id,
+      patient_id,
+      description,
+      booking_type, },
     { new: true, runValidators: true }
   );
 
@@ -168,18 +173,26 @@ It should be bookSlot
 and another one to UnbookSlot
 */
 const bookSlot: MessageHandler = async (data) => {
-  var { slot_id, booked, patient_id } = data;
-  booked = true;
+  var { slot_id, booked, patient_id, description, booking_type } = data;
   var slot = null
-  // verify it's a real object id
+  // booked = false
   const mongoose = require('mongoose');
-  
+// checks description and booking type are not null
+  if(!description || !booking_type){
+    throw new MessageException({
+      code: 400,
+      message: "Description and booking type needs to be specified",
+    });
+  }
+
+  // verify it's a real object id
   if(mongoose.Types.ObjectId.isValid(patient_id)){
+    
     slot = await SlotSchema.findByIdAndUpdate(
-    slot_id,
-    { booked, patient_id},
-    { new: true }
-  );
+      slot_id,
+      { booked: true, patient_id, description, booking_type},
+      { new: true }
+    );
   } else{
     throw new MessageException({
       code: 400,
@@ -199,11 +212,10 @@ const bookSlot: MessageHandler = async (data) => {
 
 const unBookSlot: MessageHandler = async (data) => {
   var { slot_id, booked } = data;
-  booked = false;
-  const patient_id = null
+  // booked = false;
   const slot = await SlotSchema.findByIdAndUpdate(
     slot_id,
-    { booked , patient_id},
+    { booked: false , patient_id: null, description: null, booking_type: null},
     { new: true }
   );
 
