@@ -181,11 +181,11 @@ export const deleteEmergencySlot: MessageHandler = async (data) => {
   and another one to UnbookSlot
   */
 export const bookEmergencySlot: MessageHandler = async (data) => {
-  var { EmergencySlot_id, booked } = data;
+  var { EmergencySlot_id, booked, user_id } = data;
   booked = true;
   const EmergencySlot = await EmergencySlotSchema.findByIdAndUpdate(
     EmergencySlot_id,
-    { booked },
+    { booked, user_id: user_id },
     { new: true }
   );
 
@@ -199,11 +199,11 @@ export const bookEmergencySlot: MessageHandler = async (data) => {
 };
 
 export const unbookEmergencySlot: MessageHandler = async (data) => {
-  var { EmergencySlot_id, booked } = data;
+  var { EmergencySlot_id, booked, user_id } = data;
   booked = false;
   const EmergencySlot = await EmergencySlotSchema.findByIdAndUpdate(
     EmergencySlot_id,
-    { booked },
+    { booked, user_id: "Not Registered" },
     { new: true }
   );
 

@@ -7,8 +7,7 @@ import {
   RequestInfo,
 } from "../utilities/types-utils";
 
-
-const createSlot: MessageHandler = async (data, requestInfo) => {
+export const createSlot: MessageHandler = async (data, requestInfo) => {
   if (requestInfo.user?.userType !== "dentist") {
     throw new MessageException({
       code: 403,
@@ -19,15 +18,15 @@ const createSlot: MessageHandler = async (data, requestInfo) => {
   if (!requestInfo.user?.clinic_id) {
     throw new MessageException({
       code: 403,
-      message: "To be able to create a slot ,you have to be assigned to a clinic",
+      message:
+        "To be able to create a slot, you have to be assigned to a clinic",
     });
   }
-
 
   const { date } = data;
 
   // validate the data of the slot
-  if ( !date ) {
+  if (!date) {
     // throw
     throw new MessageException({
       code: 403,
@@ -35,11 +34,11 @@ const createSlot: MessageHandler = async (data, requestInfo) => {
     });
   }
 
-  const clinic_id= requestInfo.user.clinic_id;
-  const dentist_id=requestInfo.user.id
+  const clinic_id = requestInfo.user.clinic_id;
+  const dentist_id = requestInfo.user.id;
 
   // find a registered slot in DB
-  const registeredSlot = SlotSchema.find({ date,clinic_id,dentist_id });
+  const registeredSlot = SlotSchema.find({ date, clinic_id, dentist_id });
 
   // check if slot already registered in DB
   if ((await registeredSlot).length > 0) {
@@ -51,7 +50,7 @@ const createSlot: MessageHandler = async (data, requestInfo) => {
 
   const slot = new SlotSchema({
     date,
-    booked:false,
+    booked: false,
     dentist_id,
     clinic_id,
   });
@@ -61,7 +60,7 @@ const createSlot: MessageHandler = async (data, requestInfo) => {
   return slot;
 };
 
-const getSlot: MessageHandler = async (data, requestInfo) => {
+export const getSlot: MessageHandler = async (data, requestInfo) => {
   const { slot_id } = data;
   const slot = await SlotSchema.findById(slot_id);
 
@@ -83,7 +82,7 @@ const getSlot: MessageHandler = async (data, requestInfo) => {
 };
 
 //Get all slots
-const getSlots: MessageHandler = async () => {
+export const getSlots: MessageHandler = async () => {
   const slots = await SlotSchema.find();
 
   if (!slots || slots.length === 0) {
@@ -97,11 +96,11 @@ const getSlots: MessageHandler = async () => {
 };
 
 // updateSlot fields -PATCH
-const updateSlot: MessageHandler = async (data, requestInfo) => {
+export const updateSlot: MessageHandler = async (data, requestInfo) => {
   if (requestInfo.user?.userType !== "dentist") {
     throw new MessageException({
       code: 403,
-      message: "Forbidden. Only admins can perform this action.",
+      message: "Forbidden. Only dentists can perform this action.",
     });
   }
   const { slot_id, date, dentistId, clinic_id } = data;
@@ -111,7 +110,7 @@ const updateSlot: MessageHandler = async (data, requestInfo) => {
   if (!existingSlot) {
     throw new MessageException({
       code: 400,
-      message: " Slot not found",
+      message: "Slot not found",
     });
   }
 
@@ -134,7 +133,7 @@ const updateSlot: MessageHandler = async (data, requestInfo) => {
   if (!updatedSlot) {
     throw new MessageException({
       code: 500,
-      message: " Failed to update slot",
+      message: "Failed to update slot",
     });
   }
 
@@ -142,7 +141,7 @@ const updateSlot: MessageHandler = async (data, requestInfo) => {
 };
 
 // delete slot with a specific ID
-const deleteSlot: MessageHandler = async (data) => {
+export const deleteSlot: MessageHandler = async (data) => {
   const { slot_id } = data;
 
   const slot = await SlotSchema.findByIdAndDelete(slot_id);
@@ -167,7 +166,7 @@ const deleteSlot: MessageHandler = async (data) => {
 It should be bookSlot
 and another one to UnbookSlot
 */
-const bookSlot: MessageHandler = async (data) => {
+export const bookSlot: MessageHandler = async (data) => {
   var { slot_id, booked } = data;
   booked = true;
   const slot = await SlotSchema.findByIdAndUpdate(
@@ -185,7 +184,7 @@ const bookSlot: MessageHandler = async (data) => {
   return slot;
 };
 
-const unBookSlot: MessageHandler = async (data) => {
+export const unBookSlot: MessageHandler = async (data) => {
   var { slot_id, booked } = data;
   booked = false;
   const slot = await SlotSchema.findByIdAndUpdate(
@@ -203,7 +202,7 @@ const unBookSlot: MessageHandler = async (data) => {
   return slot;
 };
 
-const deleteAllSlots: MessageHandler = async (data, requestInfo) => {
+export const deleteAllSlots: MessageHandler = async (data, requestInfo) => {
   if (requestInfo.user?.userType !== "dentist") {
     throw new MessageException({
       code: 403,

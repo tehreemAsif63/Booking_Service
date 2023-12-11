@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="jest tests" tests="13" failures="1" errors="0" time="33.779">
+  <testsuite name="createSlot" errors="0" failures="0" skipped="0" timestamp="2023-12-11T19:36:58" time="31.013" tests="3">
+    <testcase classname="createSlot should throw Forbidden exception if user is not a dentist" name="createSlot should throw Forbidden exception if user is not a dentist" time="0.212">
+    </testcase>
+    <testcase classname="createSlot should throw To be able to create a slot, you have to be assigned to a clinic" name="createSlot should throw To be able to create a slot, you have to be assigned to a clinic" time="0.005">
+    </testcase>
+    <testcase classname="createSlot should throw slot already exists for that time" name="createSlot should throw slot already exists for that time" time="0.002">
+    </testcase>
+  </testsuite>
+  <testsuite name="unbookSlot" errors="0" failures="0" skipped="0" timestamp="2023-12-11T19:36:58" time="31.131" tests="1">
+    <testcase classname="unbookSlot should throw slot not found for update" name="unbookSlot should throw slot not found for update" time="0.11">
+    </testcase>
+  </testsuite>
+  <testsuite name="checkAdminAccess" errors="0" failures="1" skipped="0" timestamp="2023-12-11T19:36:58" time="31.38" tests="1">
+    <testcase classname="checkAdminAccess should return Forbidden. Only admins can perform this action." name="checkAdminAccess should return Forbidden. Only admins can perform this action." time="0.026">
+      <failure>MessageException: Forbidden. Only admins can perform this action.
+    at checkAdminAccess (C:\Users\david\OneDrive\바탕 화면\Gothenburg University\Mini Project (Distributed Systems)\booking_service\src\controllers\clinics-controller.ts:8:11)
+    at C:\Users\david\OneDrive\바탕 화면\Gothenburg University\Mini Project (Distributed Systems)\booking_service\src\tests\checkAdminAccess.test.ts:21:34
+    at Generator.next (&lt;anonymous&gt;)
+    at C:\Users\david\OneDrive\바탕 화면\Gothenburg University\Mini Project (Distributed Systems)\booking_service\src\tests\checkAdminAccess.test.ts:8:71
+    at new Promise (&lt;anonymous&gt;)
+    at Object.&lt;anonymous&gt;.__awaiter (C:\Users\david\OneDrive\바탕 화면\Gothenburg University\Mini Project (Distributed Systems)\booking_service\src\tests\checkAdminAccess.test.ts:4:12)
+    at Object.&lt;anonymous&gt; (C:\Users\david\OneDrive\바탕 화면\Gothenburg University\Mini Project (Distributed Systems)\booking_service\src\tests\checkAdminAccess.test.ts:8:82)
+    at Promise.then.completed (C:\Users\david\OneDrive\바탕 화면\Gothenburg University\Mini Project (Distributed Systems)\booking_service\node_modules\jest-circus\build\utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (C:\Users\david\OneDrive\바탕 화면\Gothenburg University\Mini Project (Distributed Systems)\booking_service\node_modules\jest-circus\build\utils.js:231:10)
+    at _callCircusTest (C:\Users\david\OneDrive\바탕 화면\Gothenburg University\Mini Project (Distributed Systems)\booking_service\node_modules\jest-circus\build\run.js:316:40)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at _runTest (C:\Users\david\OneDrive\바탕 화면\Gothenburg University\Mini Project (Distributed Systems)\booking_service\node_modules\jest-circus\build\run.js:252:3)
+    at _runTestsForDescribeBlock (C:\Users\david\OneDrive\바탕 화면\Gothenburg University\Mini Project (Distributed Systems)\booking_service\node_modules\jest-circus\build\run.js:126:9)
+    at _runTestsForDescribeBlock (C:\Users\david\OneDrive\바탕 화면\Gothenburg University\Mini Project (Distributed Systems)\booking_service\node_modules\jest-circus\build\run.js:121:9)
+    at run (C:\Users\david\OneDrive\바탕 화면\Gothenburg University\Mini Project (Distributed Systems)\booking_service\node_modules\jest-circus\build\run.js:71:3)
+    at runAndTransformResultsToJestFormat (C:\Users\david\OneDrive\바탕 화면\Gothenburg University\Mini Project (Distributed Systems)\booking_service\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapterInit.js:122:21)
+    at jestAdapter (C:\Users\david\OneDrive\바탕 화면\Gothenburg University\Mini Project (Distributed Systems)\booking_service\node_modules\jest-circus\build\legacy-code-todo-rewrite\jestAdapter.js:79:19)
+    at runTestInternal (C:\Users\david\OneDrive\바탕 화면\Gothenburg University\Mini Project (Distributed Systems)\booking_service\node_modules\jest-runner\build\runTest.js:367:16)
+    at runTest (C:\Users\david\OneDrive\바탕 화면\Gothenburg University\Mini Project (Distributed Systems)\booking_service\node_modules\jest-runner\build\runTest.js:444:34)
+    at Object.worker (C:\Users\david\OneDrive\바탕 화면\Gothenburg University\Mini Project (Distributed Systems)\booking_service\node_modules\jest-runner\build\testWorker.js:106:12)</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="bookSlot" errors="0" failures="0" skipped="0" timestamp="2023-12-11T19:36:58" time="31.509" tests="1">
+    <testcase classname="bookSlot should throw slot not found for update" name="bookSlot should throw slot not found for update" time="0.075">
+    </testcase>
+  </testsuite>
+  <testsuite name="deleteSlot" errors="0" failures="0" skipped="0" timestamp="2023-12-11T19:36:58" time="32.059" tests="1">
+    <testcase classname="deleteSlot should throw invalid id" name="deleteSlot should throw invalid id" time="0.051">
+    </testcase>
+  </testsuite>
+  <testsuite name="getSlot" errors="0" failures="0" skipped="0" timestamp="2023-12-11T19:36:58" time="31.91" tests="2">
+    <testcase classname="getSlot should return the slot if found" name="getSlot should return the slot if found" time="0.033">
+    </testcase>
+    <testcase classname="getSlot should throw Invalid slot ID" name="getSlot should throw Invalid slot ID" time="0.041">
+    </testcase>
+  </testsuite>
+  <testsuite name="updateSlot" errors="0" failures="0" skipped="0" timestamp="2023-12-11T19:36:58" time="32.126" tests="4">
+    <testcase classname="updateSlot should return Forbidden. Only admins can perform this action." name="updateSlot should return Forbidden. Only admins can perform this action." time="0.077">
+    </testcase>
+    <testcase classname="updateSlot should return slot not found" name="updateSlot should return slot not found" time="0.07">
+    </testcase>
+    <testcase classname="updateSlot should return Input missing data, All input fields are required to be filled." name="updateSlot should return Input missing data, All input fields are required to be filled." time="0.007">
+    </testcase>
+    <testcase classname="updateSlot should return Failed to update slot" name="updateSlot should return Failed to update slot" time="0.004">
+    </testcase>
+  </testsuite>
+</testsuites>

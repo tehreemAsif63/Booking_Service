@@ -3,7 +3,7 @@ import { MessageException } from "../exceptions/MessageException";
 import { MessageHandler, RequestInfo } from "../utilities/types-utils";
 
 //Method for admin access check
-const checkAdminAccess = (requestInfo: RequestInfo) => {
+export const checkAdminAccess = (requestInfo: RequestInfo) => {
   if (!requestInfo.user?.admin) {
     throw new MessageException({
       code: 403,
@@ -83,12 +83,12 @@ const getClinic: MessageHandler = async (data) => {
     });
   }
 
-  return  {clinic};
+  return { clinic };
 };
 
 // updateClinic fields -PATCH
 const updateClinic: MessageHandler = async (data, requestInfo) => {
-  const {clinic_id, clinicName, address,workingDentists = [] } = data;
+  const { clinic_id, clinicName, address, workingDentists = [] } = data;
 
   // Check if the user is an admin
   checkAdminAccess(requestInfo);
@@ -114,7 +114,7 @@ const updateClinic: MessageHandler = async (data, requestInfo) => {
   // Perform the partial update
   const updatedClinic = await clinicSchema.findByIdAndUpdate(
     clinic_id,
-    {clinicName, address, workingDentists : [] },
+    { clinicName, address, workingDentists: [] },
     { new: true, runValidators: true }
   );
 
@@ -135,9 +135,8 @@ const deleteClinic: MessageHandler = async (data, requestInfo) => {
   // Check if the user is an admin
   checkAdminAccess(requestInfo);
 
-  
-    const clinic = await clinicSchema.findByIdAndDelete(clinic_id);
-    
+  const clinic = await clinicSchema.findByIdAndDelete(clinic_id);
+
   if (!clinic) {
     throw new MessageException({
       code: 404,

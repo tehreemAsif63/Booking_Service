@@ -28,6 +28,9 @@ const emergencySlotSchema = new Schema({
     type: String,
     required: true,
   },
+  user_id: {
+    type: String,
+  },
 });
 
 export default mongoose.model("EmergencySlot", emergencySlotSchema);
