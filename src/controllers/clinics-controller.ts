@@ -13,7 +13,7 @@ export const checkAdminAccess = (requestInfo: RequestInfo) => {
 };
 
 //creating a clinic- POST
-const createClinic: MessageHandler = async (data, requestInfo) => {
+export const createClinic: MessageHandler = async (data, requestInfo) => {
   // Check if the user is an admin
   checkAdminAccess(requestInfo);
 
@@ -34,7 +34,7 @@ const createClinic: MessageHandler = async (data, requestInfo) => {
   if ((await registeredClinic).length > 0) {
     throw new MessageException({
       code: 422,
-      message: " Clinic already exists",
+      message: "Clinic already exists",
     });
   }
   // Create a new clinic
@@ -50,7 +50,7 @@ const createClinic: MessageHandler = async (data, requestInfo) => {
 };
 
 //getting all clinics- GET
-const getAllClinics: MessageHandler = async (data) => {
+export const getAllClinics: MessageHandler = async (data) => {
   try {
     const allClinics = await clinicSchema.find({});
 
@@ -72,14 +72,14 @@ const getAllClinics: MessageHandler = async (data) => {
 };
 
 // getting Clinic with a specific id- GET/:id
-const getClinic: MessageHandler = async (data) => {
+export const getClinic: MessageHandler = async (data) => {
   const { clinic_id } = data;
   const clinic = await clinicSchema.findById(clinic_id);
 
   if (!clinic) {
     throw new MessageException({
       code: 404,
-      message: "Not Found. Clinic does not exists.",
+      message: "Not found. Clinic does not exists.",
     });
   }
 
@@ -87,7 +87,7 @@ const getClinic: MessageHandler = async (data) => {
 };
 
 // updateClinic fields -PATCH
-const updateClinic: MessageHandler = async (data, requestInfo) => {
+export const updateClinic: MessageHandler = async (data, requestInfo) => {
   const { clinic_id, clinicName, address, workingDentists = [] } = data;
 
   // Check if the user is an admin
@@ -107,7 +107,7 @@ const updateClinic: MessageHandler = async (data, requestInfo) => {
   if (!existingClinic) {
     throw new MessageException({
       code: 400,
-      message: "Not Found. Clinic not found",
+      message: "Not found. Clinic not found",
     });
   }
 
@@ -129,7 +129,7 @@ const updateClinic: MessageHandler = async (data, requestInfo) => {
 };
 
 // delete clinic with a specific ID
-const deleteClinic: MessageHandler = async (data, requestInfo) => {
+export const deleteClinic: MessageHandler = async (data, requestInfo) => {
   const { clinic_id } = data;
 
   // Check if the user is an admin
@@ -140,14 +140,14 @@ const deleteClinic: MessageHandler = async (data, requestInfo) => {
   if (!clinic) {
     throw new MessageException({
       code: 404,
-      message: "Not Found. Clinic does not exist.",
+      message: "Not found. Clinic does not exist.",
     });
   }
   return `Clinic deleted successfully.`;
 };
 
 //Delete all clinics method
-const deleteAllClinics: MessageHandler = async (data, requestInfo) => {
+export const deleteAllClinics: MessageHandler = async (data, requestInfo) => {
   // Check if the user is an admin
   checkAdminAccess(requestInfo);
 
@@ -156,7 +156,7 @@ const deleteAllClinics: MessageHandler = async (data, requestInfo) => {
   if (clinicSchema === null) {
     throw new MessageException({
       code: 500,
-      message: "Data Base is Already empty",
+      message: "Database is already empty",
     });
   }
 
