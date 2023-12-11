@@ -1,6 +1,7 @@
-const mongoose = require("mongoose");
+import { InferSchemaType } from "mongoose";
+import clinics from "./clinics";
+import mongoose from "mongoose";
 const Schema = mongoose.Schema;
-const clinics = require("../schemas/clinics");
 /**
  * time: The date and time of the registered slot
  * availability: The availability of the registered slot

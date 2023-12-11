@@ -122,7 +122,7 @@ export const updateEmergencySlot: MessageHandler = async (
   if (!existingEmergencySlot) {
     throw new MessageException({
       code: 400,
-      message: " Emergency Slot not found",
+      message: "Emergency slot not found",
     });
   }
 
@@ -145,7 +145,7 @@ export const updateEmergencySlot: MessageHandler = async (
   if (!updatedEmergencySlot) {
     throw new MessageException({
       code: 500,
-      message: " Failed to update Emergency Slot",
+      message: "Failed to update Emergency slot",
     });
   }
 
