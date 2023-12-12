@@ -11,8 +11,13 @@ const clinicSchema = new Schema({
     type: String,
     unique: true,
     required: [true, "Address must be registered"],
-  }
- 
+  },
+  workingDentists: [
+    {
+      type: String,
+    },
+  ],
+
 });
 
 export default mongoose.model("Clinic", clinicSchema);

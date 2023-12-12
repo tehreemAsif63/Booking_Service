@@ -21,7 +21,7 @@ const slotSchema = new Schema({
   clinic_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: clinics,
-    required: true,
+    required: false,
   },
   dentist_id: {
     type: String,
