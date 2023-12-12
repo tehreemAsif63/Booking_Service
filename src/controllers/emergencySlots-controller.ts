@@ -233,7 +233,7 @@ export const deleteAllEmergencySlots: MessageHandler = async (
   } else {
     throw new MessageException({
       code: 400,
-      message: "DataBase already empty",
+      message: "Database already empty",
     });
   }
 };

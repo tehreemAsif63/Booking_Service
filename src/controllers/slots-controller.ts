@@ -216,7 +216,7 @@ export const deleteAllSlots: MessageHandler = async (data, requestInfo) => {
   } else {
     throw new MessageException({
       code: 400,
-      message: "DataBase already empty",
+      message: "Database already empty",
     });
   }
 };
