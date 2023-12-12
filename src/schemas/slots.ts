@@ -27,6 +27,18 @@ const slotSchema = new Schema({
     type: String,
     required: true,
   },
+  patient_id: {
+    type: String,
+    required: false,
+  },
+  description: {
+    type: String,
+    required: false,
+  },
+  booking_type: {
+    type: String,
+    required: false,
+  },
 });
 
 export default mongoose.model("Slot", slotSchema);
