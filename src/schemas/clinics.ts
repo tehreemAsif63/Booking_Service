@@ -1,6 +1,4 @@
-import mongoose ,{Schema, InferSchemaType } from "mongoose";
-
-
+import mongoose, { Schema, InferSchemaType } from "mongoose";
 
 const clinicSchema = new Schema({
   clinicName: {
@@ -11,8 +9,12 @@ const clinicSchema = new Schema({
     type: String,
     unique: true,
     required: [true, "Address must be registered"],
-  }
- 
+  },
+  workingDentists: [
+    {
+      type: String,
+    },
+  ],
 });
 
 export default mongoose.model("Clinic", clinicSchema);
