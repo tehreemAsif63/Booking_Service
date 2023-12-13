@@ -15,6 +15,10 @@ const clinicSchema = new Schema({
       type: String,
     },
   ],
+<<<<<<< HEAD
+=======
+
+>>>>>>> main
 });
 
 export default mongoose.model("Clinic", clinicSchema);
