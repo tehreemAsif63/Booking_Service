@@ -103,7 +103,15 @@ export const updateSlot: MessageHandler = async (data, requestInfo) => {
       message: "Forbidden. Only dentists can perform this action.",
     });
   }
-  const { slot_id, date, dentistId, clinic_id, patient_id, description,booking_type } = data;
+  const {
+    slot_id,
+    date,
+    dentistId,
+    clinic_id,
+    patient_id,
+    description,
+    booking_type,
+  } = data;
   console.log("slotID", slot_id);
   // Check if the slot with the given ID exists
   const existingSlot = await SlotSchema.findById(slot_id);
@@ -126,12 +134,14 @@ export const updateSlot: MessageHandler = async (data, requestInfo) => {
   // Perform the partial update
   const updatedSlot = await SlotSchema.findByIdAndUpdate(
     slot_id,
-    { date,
+    {
+      date,
       dentist_id: dentistId,
       clinic_id,
       patient_id,
       description,
-      booking_type, },
+      booking_type,
+    },
     { new: true, runValidators: true }
   );
 
@@ -171,13 +181,13 @@ export const deleteSlot: MessageHandler = async (data) => {
 It should be bookSlot
 and another one to UnbookSlot
 */
-const bookSlot: MessageHandler = async (data) => {
+export const bookSlot: MessageHandler = async (data) => {
   var { slot_id, booked, patient_id, description, booking_type } = data;
-  var slot = null
+  var slot = null;
   // booked = false
-  const mongoose = require('mongoose');
-// checks description and booking type are not null
-  if(!description || !booking_type){
+  const mongoose = require("mongoose");
+  // checks description and booking type are not null
+  if (!description || !booking_type) {
     throw new MessageException({
       code: 400,
       message: "Description and booking type needs to be specified",
@@ -185,20 +195,18 @@ const bookSlot: MessageHandler = async (data) => {
   }
 
   // verify it's a real object id
-  if(mongoose.Types.ObjectId.isValid(patient_id)){
-    
+  if (mongoose.Types.ObjectId.isValid(patient_id)) {
     slot = await SlotSchema.findByIdAndUpdate(
       slot_id,
-      { booked: true, patient_id, description, booking_type},
+      { booked: true, patient_id, description, booking_type },
       { new: true }
     );
-  } else{
+  } else {
     throw new MessageException({
       code: 400,
       message: "Valid patient ID needs to be specified",
     });
   }
-  
 
   if (!slot) {
     throw new MessageException({
@@ -214,7 +222,7 @@ export const unBookSlot: MessageHandler = async (data) => {
   // booked = false;
   const slot = await SlotSchema.findByIdAndUpdate(
     slot_id,
-    { booked: false , patient_id: null, description: null, booking_type: null},
+    { booked: false, patient_id: null, description: null, booking_type: null },
     { new: true }
   );
 
