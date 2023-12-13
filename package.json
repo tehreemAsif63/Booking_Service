@@ -13,6 +13,7 @@
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
+    "date-fns": "^2.30.0",
     "lodash": "^4.17.21",
     "mongoose": "^8.0.1",
     "mqtt": "^5.3.3",

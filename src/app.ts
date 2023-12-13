@@ -22,6 +22,7 @@ const messageMapping: { [key: string]: MessageHandler } = {
   "clinics/delete/:clinic_id": clinicsController.deleteClinic,
   "clinics/delete": clinicsController.deleteAllClinics,
   //--------------
+  "slots/create/many":slotsController.createSlots,
   "slots/create": slotsController.createSlot,
   "slots/all": slotsController.getSlots,
   "slots/:slot_id": slotsController.getSlot,

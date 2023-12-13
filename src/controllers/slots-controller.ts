@@ -1,13 +1,83 @@
 import SlotSchema, { Slot } from "../schemas/slots";
 import clinicSchema, { Clinic } from "../schemas/clinics";
 import { MessageException } from "../exceptions/MessageException";
+import { MessageHandler } from "../utilities/types-utils";
 import {
-  MessageHandler,
-  MessageData,
-  RequestInfo,
-} from "../utilities/types-utils";
+  isBefore,
+  setHours,
+  setMinutes,
+  setSeconds,
+  addMinutes,
+} from "date-fns";
 
-export const createSlot: MessageHandler = async (data, requestInfo) => {
+const createSlots: MessageHandler = async (data, requestInfo) => {
+  if (requestInfo.user?.userType !== "dentist") {
+    throw new MessageException({
+      code: 403,
+      message: "Forbidden",
+    });
+  }
+
+  if (!requestInfo.user?.clinic_id) {
+    throw new MessageException({
+      code: 403,
+      message:
+        "To be able to create a slot, you have to be assigned to a clinic",
+    });
+  }
+
+  const { start, end, duration } = data as {
+    start?: string;
+    end?: string;
+    duration?: number;
+  };
+
+  // validate the data of the slot
+  if (!start || !end || !duration) {
+    // throw
+    throw new MessageException({
+      code: 403,
+      message: "Input missing data, All data required",
+    });
+  }
+
+  const clinic_id = requestInfo.user.clinic_id;
+  const dentist_id = requestInfo.user.id;
+
+  const step = (x) => addMinutes(x, duration);
+
+  let cursor = new Date(start);
+
+  while (isBefore(cursor, new Date(end))) {
+    // find a registered slot in DB
+    const registeredSlot = SlotSchema.find({
+      date: cursor,
+      clinic_id,
+      dentist_id,
+    });
+
+    // check if slot already registered in DB
+    if ((await registeredSlot).length > 0) {
+      throw new MessageException({
+        code: 403,
+        message: "Slot already exists for that time",
+      });
+    }
+
+    const slot = new SlotSchema({
+      date: cursor,
+      booked: false,
+      dentist_id,
+      clinic_id,
+    });
+
+    slot.save();
+    cursor = step(cursor);
+  }
+  return "Created";
+};
+
+const createSlot: MessageHandler = async (data, requestInfo) => {
   if (requestInfo.user?.userType !== "dentist") {
     throw new MessageException({
       code: 403,
@@ -60,7 +130,7 @@ export const createSlot: MessageHandler = async (data, requestInfo) => {
   return slot;
 };
 
-export const getSlot: MessageHandler = async (data, requestInfo) => {
+const getSlot: MessageHandler = async (data, requestInfo) => {
   const { slot_id } = data;
   const slot = await SlotSchema.findById(slot_id);
 
@@ -82,7 +152,7 @@ export const getSlot: MessageHandler = async (data, requestInfo) => {
 };
 
 //Get all slots
-export const getSlots: MessageHandler = async () => {
+const getSlots: MessageHandler = async () => {
   const slots = await SlotSchema.find();
 
   if (!slots || slots.length === 0) {
@@ -96,14 +166,15 @@ export const getSlots: MessageHandler = async () => {
 };
 
 // updateSlot fields -PATCH
-export const updateSlot: MessageHandler = async (data, requestInfo) => {
+const updateSlot: MessageHandler = async (data, requestInfo) => {
   if (requestInfo.user?.userType !== "dentist") {
     throw new MessageException({
       code: 403,
       message: "Forbidden. Only dentists can perform this action.",
     });
   }
-  const { slot_id, date, dentistId, clinic_id, patient_id, description,booking_type } = data;
+  const { slot_id, date, dentistId, clinic_id, description, booking_type } =
+    data;
   console.log("slotID", slot_id);
   // Check if the slot with the given ID exists
   const existingSlot = await SlotSchema.findById(slot_id);
@@ -126,12 +197,7 @@ export const updateSlot: MessageHandler = async (data, requestInfo) => {
   // Perform the partial update
   const updatedSlot = await SlotSchema.findByIdAndUpdate(
     slot_id,
-    { date,
-      dentist_id: dentistId,
-      clinic_id,
-      patient_id,
-      description,
-      booking_type, },
+    { date, dentist_id: dentistId, clinic_id, description, booking_type },
     { new: true, runValidators: true }
   );
 
@@ -146,7 +212,7 @@ export const updateSlot: MessageHandler = async (data, requestInfo) => {
 };
 
 // delete slot with a specific ID
-export const deleteSlot: MessageHandler = async (data) => {
+const deleteSlot: MessageHandler = async (data) => {
   const { slot_id } = data;
 
   const slot = await SlotSchema.findByIdAndDelete(slot_id);
@@ -173,32 +239,30 @@ and another one to UnbookSlot
 */
 const bookSlot: MessageHandler = async (data) => {
   var { slot_id, booked, patient_id, description, booking_type } = data;
-  var slot = null
+  var slot = null;
   // booked = false
-  const mongoose = require('mongoose');
-// checks description and booking type are not null
-  if(!description || !booking_type){
+  const mongoose = require("mongoose");
+  // checks description and booking type are not null
+  /* if(!description || !booking_type){
     throw new MessageException({
       code: 400,
       message: "Description and booking type needs to be specified",
     });
-  }
+  } */
 
   // verify it's a real object id
-  if(mongoose.Types.ObjectId.isValid(patient_id)){
-    
+  if (mongoose.Types.ObjectId.isValid(patient_id)) {
     slot = await SlotSchema.findByIdAndUpdate(
       slot_id,
-      { booked: true, patient_id, description, booking_type},
+      { booked: true, patient_id, description, booking_type },
       { new: true }
     );
-  } else{
+  } else {
     throw new MessageException({
       code: 400,
       message: "Valid patient ID needs to be specified",
     });
   }
-  
 
   if (!slot) {
     throw new MessageException({
@@ -209,12 +273,12 @@ const bookSlot: MessageHandler = async (data) => {
   return slot;
 };
 
-export const unBookSlot: MessageHandler = async (data) => {
+const unBookSlot: MessageHandler = async (data) => {
   var { slot_id, booked } = data;
   // booked = false;
   const slot = await SlotSchema.findByIdAndUpdate(
     slot_id,
-    { booked: false , patient_id: null, description: null, booking_type: null},
+    { booked: false, patient_id: null, description: null, booking_type: null },
     { new: true }
   );
 
@@ -227,7 +291,7 @@ export const unBookSlot: MessageHandler = async (data) => {
   return slot;
 };
 
-export const deleteAllSlots: MessageHandler = async (data, requestInfo) => {
+const deleteAllSlots: MessageHandler = async (data, requestInfo) => {
   if (requestInfo.user?.userType !== "dentist") {
     throw new MessageException({
       code: 403,
@@ -247,6 +311,7 @@ export const deleteAllSlots: MessageHandler = async (data, requestInfo) => {
 };
 
 export default {
+  createSlots,
   createSlot,
   getSlot,
   getSlots,
