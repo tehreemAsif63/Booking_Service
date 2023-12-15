@@ -9,6 +9,7 @@ import {
   setSeconds,
   addMinutes,
 } from "date-fns";
+import { FilterQuery } from "mongoose";
 
 const createSlots: MessageHandler = async (data, requestInfo) => {
   if (requestInfo.user?.userType !== "dentist") {
@@ -51,7 +52,7 @@ const createSlots: MessageHandler = async (data, requestInfo) => {
   while (isBefore(cursor, new Date(end))) {
     // find a registered slot in DB
     const registeredSlot = SlotSchema.find({
-      date: cursor,
+      start: cursor,
       clinic_id,
       dentist_id,
     });
@@ -65,7 +66,8 @@ const createSlots: MessageHandler = async (data, requestInfo) => {
     }
 
     const slot = new SlotSchema({
-      date: cursor,
+      start: cursor,
+      end: step(cursor),
       booked: false,
       dentist_id,
       clinic_id,
@@ -93,10 +95,10 @@ const createSlot: MessageHandler = async (data, requestInfo) => {
     });
   }
 
-  const { date } = data;
+  const { start, end } = data;
 
   // validate the data of the slot
-  if (!date) {
+  if (!start || !end) {
     // throw
     throw new MessageException({
       code: 403,
@@ -108,7 +110,7 @@ const createSlot: MessageHandler = async (data, requestInfo) => {
   const dentist_id = requestInfo.user.id;
 
   // find a registered slot in DB
-  const registeredSlot = SlotSchema.find({ date, clinic_id, dentist_id });
+  const registeredSlot = SlotSchema.find({ start, end, clinic_id, dentist_id });
 
   // check if slot already registered in DB
   if ((await registeredSlot).length > 0) {
@@ -119,7 +121,8 @@ const createSlot: MessageHandler = async (data, requestInfo) => {
   }
 
   const slot = new SlotSchema({
-    date,
+    start,
+    end,
     booked: false,
     dentist_id,
     clinic_id,
@@ -152,15 +155,15 @@ const getSlot: MessageHandler = async (data, requestInfo) => {
 };
 
 //Get all slots
-const getSlots: MessageHandler = async () => {
-  const slots = await SlotSchema.find();
-
-  if (!slots || slots.length === 0) {
-    throw new MessageException({
-      code: 404,
-      message: "No slots found",
-    });
+const getSlots: MessageHandler = async (data, requestInfo) => {
+  let query: FilterQuery<Slot> = {};
+  if (requestInfo.user?.userType == "dentist") {
+    query = {
+      dentist_id: requestInfo.user.id,
+    };
   }
+
+  const slots = await SlotSchema.find(query);
 
   return slots;
 };
