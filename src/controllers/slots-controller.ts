@@ -132,6 +132,49 @@ const createSlot: MessageHandler = async (data, requestInfo) => {
 
   return slot;
 };
+const getClinicSlots: MessageHandler = async (data) => {
+  let query: FilterQuery<Slot> = {};
+  query = { clinic_id: data.clinic_id };
+  
+  const slots = await SlotSchema.find( query );
+  if (!slots) {
+    throw new MessageException({
+      code: 400,
+      message: "Invalid clinic ID",
+    });
+  }
+
+  if (slots === null) {
+    throw new MessageException({
+      code: 400,
+      message: "Slot within that clinic does not exist",
+    });
+  }
+  return slots;
+};
+
+
+const getClinicDentistSlots: MessageHandler = async (data) => {
+  let query: FilterQuery<Slot> = {};
+  query = { clinic_id: data.clinic_id,
+  dentist_id:data.dentist_id};
+  
+  const slots = await SlotSchema.find( query );
+  if (!slots) {
+    throw new MessageException({
+      code: 400,
+      message: "Invalid Clinic/dentist id",
+    });
+  }
+
+  if (slots === null) {
+    throw new MessageException({
+      code: 400,
+      message: "Slot within that clinic does not exist",
+    });
+  }
+  return slots;
+};
 
 const getSlot: MessageHandler = async (data, requestInfo) => {
   const { slot_id } = data;
@@ -164,7 +207,19 @@ const getSlots: MessageHandler = async (data, requestInfo) => {
   }
 
   const slots = await SlotSchema.find(query);
+  if (!slots) {
+    throw new MessageException({
+      code: 400,
+      message: "Invalid slot ID",
+    });
+  }
 
+  if (slots === null) {
+    throw new MessageException({
+      code: 400,
+      message: "Slot does not exist",
+    });
+  }
   return slots;
 };
 
@@ -318,6 +373,8 @@ export default {
   createSlot,
   getSlot,
   getSlots,
+  getClinicSlots,
+  getClinicDentistSlots,
   updateSlot,
   deleteSlot,
   bookSlot,
