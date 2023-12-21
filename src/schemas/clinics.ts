@@ -10,6 +10,10 @@ const clinicSchema = new Schema({
     unique: true,
     required: [true, "Address must be registered"],
   },
+  position: {
+    lat: { type: Number, required: true },
+    lng: { type: Number, required: true }
+  },
   workingDentists: [
     {
       type: String,
