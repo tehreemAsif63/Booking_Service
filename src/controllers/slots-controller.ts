@@ -231,7 +231,7 @@ const updateSlot: MessageHandler = async (data, requestInfo) => {
       message: "Forbidden. Only dentists can perform this action.",
     });
   }
-  const { slot_id, date, dentistId, clinic_id, description, booking_type } =
+  const { slot_id, start,end, dentistId, clinic_id, description, booking_type } =
     data;
   console.log("slotID", slot_id);
   // Check if the slot with the given ID exists
@@ -244,7 +244,7 @@ const updateSlot: MessageHandler = async (data, requestInfo) => {
   }
 
   // Check if slotUpdates that's provided and not empty
-  if (!date || !dentistId || !clinic_id) {
+  if (!start||!end|| !dentistId || !clinic_id) {
     throw new MessageException({
       code: 422,
       message:
@@ -255,7 +255,7 @@ const updateSlot: MessageHandler = async (data, requestInfo) => {
   // Perform the partial update
   const updatedSlot = await SlotSchema.findByIdAndUpdate(
     slot_id,
-    { date, dentist_id: dentistId, clinic_id, description, booking_type },
+    { start,end, dentist_id: dentistId, clinic_id, description, booking_type },
     { new: true, runValidators: true }
   );
 
@@ -296,10 +296,14 @@ It should be bookSlot
 and another one to UnbookSlot
 */
 const bookSlot: MessageHandler = async (data) => {
-  var { slot_id, booked, patient_id, description, booking_type } = data;
-  var slot = null;
-  // booked = false
-  const mongoose = require("mongoose");
+  var { slot_id,  patient_id} = data;
+  const slot = await SlotSchema.findByIdAndUpdate(
+    slot_id,
+    { booked: true, patient_id:patient_id, description: "checkup", booking_type: null },
+    { new: true }
+  );
+
+  
   // checks description and booking type are not null
   /* if(!description || !booking_type){
     throw new MessageException({
@@ -309,7 +313,7 @@ const bookSlot: MessageHandler = async (data) => {
   } */
 
   // verify it's a real object id
-  if (mongoose.Types.ObjectId.isValid(patient_id)) {
+  /* if (mongoose.Types.ObjectId.isValid(patient_id)) {
     slot = await SlotSchema.findByIdAndUpdate(
       slot_id,
       { booked: true, patient_id, description, booking_type },
@@ -320,7 +324,7 @@ const bookSlot: MessageHandler = async (data) => {
       code: 400,
       message: "Valid patient ID needs to be specified",
     });
-  }
+  } */
 
   if (!slot) {
     throw new MessageException({
@@ -331,12 +335,14 @@ const bookSlot: MessageHandler = async (data) => {
   return slot;
 };
 
-const unBookSlot: MessageHandler = async (data) => {
-  var { slot_id, booked } = data;
+const unBookSlot: MessageHandler = async (data,requestInfo) => {
+
+  if(requestInfo.user?.userType=="dentist"||requestInfo.user?.id===data.patient_id){
+  const { slot_id} = data;
   // booked = false;
   const slot = await SlotSchema.findByIdAndUpdate(
     slot_id,
-    { booked: false, patient_id: null, description: null, booking_type: null },
+    { booked: false, patient_id:null, description: null, booking_type: null },
     { new: true }
   );
 
@@ -347,6 +353,14 @@ const unBookSlot: MessageHandler = async (data) => {
     });
   }
   return slot;
+
+  } else{
+    throw new MessageException({
+      code: 400,
+      message: "Forbidden action, slot already booked for other patient",
+    })
+  }
+  
 };
 
 const deleteAllSlots: MessageHandler = async (data, requestInfo) => {
