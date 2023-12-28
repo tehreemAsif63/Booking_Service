@@ -1,5 +1,6 @@
 import mqtt from "mqtt";
 import mongoose from "mongoose";
+import NodeGeocoder from"node-geocoder"
 import slotsController from "./controllers/slots-controller";
 import clinicsController from "./controllers/clinics-controller";
 import emergencySlotsController from "./controllers/emergencySlots-controller";
