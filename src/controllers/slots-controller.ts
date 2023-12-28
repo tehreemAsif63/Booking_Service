@@ -414,7 +414,7 @@ const unBookSlot: MessageHandler = async (
     { new: true }
   );
 
-  return slot;
+  return { patient_id: slotData.patient_id };
 };
 
 const deleteAllSlots: MessageHandler = async (data, requestInfo) => {
