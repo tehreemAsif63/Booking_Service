@@ -1,4 +1,4 @@
-import { getSlot } from "../controllers/slots-controller";
+import { getSlots } from "../controllers/slots-controller";
 import { MessageException } from "../exceptions/MessageException";
 import SlotSchema from "../schemas/slots";
 
@@ -22,7 +22,7 @@ describe("getSlots", () => {
     const findByIdMock = jest.spyOn(SlotSchema, "findById");
     findByIdMock.mockResolvedValue(null);
 
-    await expect(getSlot(testData, requestInfo)).rejects.toThrow(
+    await expect(getSlots(testData, requestInfo)).rejects.toThrow(
       new MessageException({
         code: 400,
         message: "Invalid slot ID",

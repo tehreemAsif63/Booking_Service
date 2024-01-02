@@ -88,7 +88,8 @@ describe("updateSlot", () => {
   it("should return Failed to update slot", async () => {
     const updateInfo = {
       slot_id: "123456",
-      date: new Date(),
+      start: "2023-12-31",
+      end: "2023-12-31",
       dentistId: "000000",
       clinic_id: "000000",
     };
