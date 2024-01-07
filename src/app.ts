@@ -1,5 +1,6 @@
 import mqtt from "mqtt";
 import mongoose from "mongoose";
+import NodeGeocoder from "node-geocoder";
 import slotsController from "./controllers/slots-controller";
 import clinicsController from "./controllers/clinics-controller";
 import emergencySlotsController from "./controllers/emergencySlots-controller";
@@ -17,14 +18,18 @@ const client = mqtt.connect(process.env.MQTT_URI || "mqtt://localhost:1883");
 const messageMapping: { [key: string]: MessageHandler } = {
   "clinics/create": clinicsController.createClinic,
   "clinics/all": clinicsController.getAllClinics,
-  "clinics/:clinic_id": clinicsController.getClinic,
+  "clinics/getOne": clinicsController.getClinic,
   "clinics/update/:clinic_id": clinicsController.updateClinic,
   "clinics/delete/:clinic_id": clinicsController.deleteClinic,
   "clinics/delete": clinicsController.deleteAllClinics,
   //--------------
+  "slots/create/many": slotsController.createSlots,
   "slots/create": slotsController.createSlot,
   "slots/all": slotsController.getSlots,
   "slots/:slot_id": slotsController.getSlot,
+  "slots/clinic/:clinic_id": slotsController.getClinicSlots,
+  "slots/clinic/:clinic_id/dentist/:dentist_id":
+    slotsController.getClinicDentistSlots,
   "slots/update/:slot_id": slotsController.updateSlot,
   "slots/:slot_id/book": slotsController.bookSlot,
   "slots/:slot_id/unbook": slotsController.unBookSlot,

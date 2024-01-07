@@ -1,6 +1,7 @@
 import clinicSchema, { Clinic } from "../schemas/clinics";
 import { MessageException } from "../exceptions/MessageException";
 import { MessageHandler, RequestInfo } from "../utilities/types-utils";
+import { createPosition } from "../utilities/position-utils";
 
 //Method for admin access check
 export const checkAdminAccess = (requestInfo: RequestInfo) => {
@@ -41,6 +42,7 @@ export const createClinic: MessageHandler = async (data, requestInfo) => {
   const newClinic = new clinicSchema({
     clinicName,
     address,
+    position: await createPosition(address),
     workingDentists,
   });
 
@@ -83,7 +85,7 @@ export const getClinic: MessageHandler = async (data) => {
     });
   }
 
-  return { clinic };
+  return  clinic ;
 };
 
 // updateClinic fields -PATCH

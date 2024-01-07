@@ -8,12 +8,16 @@ const Schema = mongoose.Schema;
  * availability: The availability of the registered slot
  */
 const slotSchema = new Schema({
-  date: {
+  start: {
     type: Date,
     required: [true, "Date and time must be registered"],
-    unique: true,
+    
   },
-
+  end: {
+    type: Date,
+    required: [true, "Date and time must be registered"],
+    
+  },
   booked: {
     type: Boolean,
     default: false,
@@ -40,6 +44,6 @@ const slotSchema = new Schema({
     required: false,
   },
 });
-
+slotSchema.index({start:1,dentist_id:1},{unique:true})
 export default mongoose.model("Slot", slotSchema);
 export type Slot = InferSchemaType<typeof slotSchema>;

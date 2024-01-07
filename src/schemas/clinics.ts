@@ -1,6 +1,4 @@
-import mongoose ,{Schema, InferSchemaType } from "mongoose";
-
-
+import mongoose, { Schema, InferSchemaType } from "mongoose";
 
 const clinicSchema = new Schema({
   clinicName: {
@@ -12,12 +10,15 @@ const clinicSchema = new Schema({
     unique: true,
     required: [true, "Address must be registered"],
   },
+  position: {
+    lat: { type: Number, required: true },
+    lng: { type: Number, required: true }
+  },
   workingDentists: [
     {
       type: String,
     },
   ],
-
 });
 
 export default mongoose.model("Clinic", clinicSchema);
