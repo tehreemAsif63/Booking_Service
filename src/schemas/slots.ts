@@ -18,7 +18,6 @@ const slotSchema = new Schema({
     required: [true, "Date and time must be registered"],
     
   },
-  
   booked: {
     type: Boolean,
     default: false,
