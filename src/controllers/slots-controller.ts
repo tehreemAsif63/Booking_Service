@@ -204,7 +204,37 @@ export const getSlots: MessageHandler = async (data, requestInfo) => {
     };
   }
 
+  if (requestInfo.user?.userType == "patient") {
+    query = {
+      patient_id: requestInfo.user.id,
+    };
+  }
+
   const slots = await SlotSchema.find(query);
+  
+  let offset = requestInfo.query?.offset;
+  let limit = requestInfo.query?.limit;
+
+  if (typeof offset !== 'number') {
+    offset = 0; // default value if offset is undefined
+  }
+
+  if (typeof limit !== 'number') {
+    limit = 10; // default value if limit is undefined
+  }
+
+  // Check if offset and limit are valid integers
+  if (!isNaN(offset) && !isNaN(limit) && offset >= 0 && limit > 0) {
+    // Return paginated slots if offset and limit are provided
+    const paginatedSlots = await SlotSchema
+      .find(query)
+      .skip(offset)
+      .limit(limit);
+  } else {
+    // Return all notifications if offset and limit are not provided
+    const slots = await SlotSchema.find(query);
+  }
+
   if (!slots) {
     throw new MessageException({
       code: 400,
@@ -414,7 +444,7 @@ export const unBookSlot: MessageHandler = async (
     { new: true }
   );
 
-  return slot;
+  return slotData;
 };
 
 export const deleteAllSlots: MessageHandler = async (data, requestInfo) => {
