@@ -85,7 +85,7 @@ export const getClinic: MessageHandler = async (data) => {
     });
   }
 
-  return { clinic };
+  return  clinic ;
 };
 
 // updateClinic fields -PATCH
