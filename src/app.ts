@@ -1,8 +1,11 @@
 import mqtt from "mqtt";
 import mongoose from "mongoose";
+import schedule from "node-schedule";
 import slotsController from "./controllers/slots-controller";
 import clinicsController from "./controllers/clinics-controller";
 import emergencySlotsController from "./controllers/emergencySlots-controller";
+import ScoreSchema from "./schemas/score";
+
 import {
   MessageData,
   MessageHandler,
@@ -22,34 +25,26 @@ const messageMapping: { [key: string]: MessageHandler } = {
   "clinics/delete/:clinic_id": clinicsController.deleteClinic,
   "clinics/delete": clinicsController.deleteAllClinics,
   //--------------
-  "slots/create/many":slotsController.createSlots,
+  "slots/create/many": slotsController.createSlots,
   "slots/create": slotsController.createSlot,
   "slots/all": slotsController.getSlots,
   "slots/:slot_id": slotsController.getSlot,
   "slots/clinic/:clinic_id": slotsController.getClinicSlots,
-  "slots/clinic/:clinic_id/dentist/:dentist_id": slotsController.getClinicDentistSlots,
+  "slots/clinic/:clinic_id/dentist/:dentist_id":
+    slotsController.getClinicDentistSlots,
   "slots/update/:slot_id": slotsController.updateSlot,
   "slots/:slot_id/book": slotsController.bookSlot,
   "slots/:slot_id/unbook": slotsController.unBookSlot,
   "slots/delete/:slot_id": slotsController.deleteSlot,
   "slots/delete": slotsController.deleteAllSlots,
   //--------------
-  "emergency-slots/create": emergencySlotsController.createEmergencySlot,
-  "emergency-slots/all": emergencySlotsController.getEmergencySlots,
-  "emergency-slots/:slot_id": emergencySlotsController.getEmergencySlot,
-  "emergency-slots/update/:slot_id":
-    emergencySlotsController.updateEmergencySlot,
-  "emergency-slots/:slot_id/book": emergencySlotsController.bookEmergencySlot,
-  "emergency-slots/:slot_id/unbook":
-    emergencySlotsController.unbookEmergencySlot,
-  "emergency-slots/delete/:slot_id":
-    emergencySlotsController.deleteEmergencySlot,
-  "emergency-slots/delete": emergencySlotsController.deleteAllEmergencySlots,
+  "emergency-slots/score": emergencySlotsController.getScore,
 };
 
 client.on("connect", () => {
   client.subscribe("clinics/#");
   client.subscribe("slots/#");
+  client.subscribe("emergency-slots/#");
 });
 
 client.on("message", async (topic, message) => {
@@ -94,6 +89,24 @@ client.on("message", async (topic, message) => {
   //client.end();}
 });
 
+// Schedule resets for the score collection when the date changes.
+const resetScoreDB = async () => {
+  try {
+    await ScoreSchema.deleteMany({});
+    console.log("Reset successful!");
+  } catch (err) {
+    console.error("An error occured:", err);
+  }
+};
+
+const scheduleScoreReset = () => {
+  schedule.scheduleJob("0 0 * * *", async () => {
+    await resetScoreDB();
+  });
+};
+
+scheduleScoreReset();
+
 // Set URI to connect to
 
 // Connect to MongoDB
@@ -101,6 +114,7 @@ mongoose
   .connect(mongoURI)
   .then(function () {
     console.log(`Connected to MongoDB with URI: ${mongoURI}`);
+    scheduleScoreReset();
   })
   .catch(function (err) {
     if (err) {

@@ -9,16 +9,17 @@ const Schema = mongoose.Schema;
  * emergencyScore: The emergency indicator for the patient
  */
 const emergencySlotSchema = new Schema({
-  time: {
+  start: {
+    type: Date,
+    required: [true, "Date and time must be registered"],
+  },
+  end: {
     type: Date,
     required: [true, "Date and time must be registered"],
   },
   booked: {
     type: Boolean,
     default: false,
-  },
-  emergencyScore: {
-    type: Number,
   },
   clinic_id: {
     type: mongoose.Schema.Types.ObjectId,
