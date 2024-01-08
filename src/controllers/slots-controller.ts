@@ -374,7 +374,7 @@ const bookSlot: MessageHandler = async (
     {
       booked: true,
       patient_id: patient_id,
-      description: "checkup",
+      description: null,
       booking_type: null,
     },
     { new: true }
