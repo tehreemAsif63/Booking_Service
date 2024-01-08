@@ -1,12 +1,8 @@
 import SlotSchema, { Slot } from "../schemas/slots";
-import clinicSchema, { Clinic } from "../schemas/clinics";
 import { MessageException } from "../exceptions/MessageException";
 import { MessageHandler } from "../utilities/types-utils";
 import {
   isBefore,
-  setHours,
-  setMinutes,
-  setSeconds,
   addMinutes,
 } from "date-fns";
 import mongoose, { FilterQuery } from "mongoose";
@@ -265,8 +261,7 @@ const updateSlot: MessageHandler = async (data, requestInfo) => {
     end,
     dentistId,
     clinic_id,
-    description,
-    booking_type,
+   
   } = data;
   console.log("slotID", slot_id);
   // Check if the slot with the given ID exists
@@ -290,7 +285,7 @@ const updateSlot: MessageHandler = async (data, requestInfo) => {
   // Perform the partial update
   const updatedSlot = await SlotSchema.findByIdAndUpdate(
     slot_id,
-    { start, end, dentist_id: dentistId, clinic_id, description, booking_type },
+    { start, end, dentist_id: dentistId, clinic_id },
     { new: true, runValidators: true }
   );
 
@@ -374,8 +369,7 @@ const bookSlot: MessageHandler = async (
     {
       booked: true,
       patient_id: patient_id,
-      description: "checkup",
-      booking_type: null,
+      
     },
     { new: true }
   );
@@ -449,8 +443,7 @@ const unBookSlot: MessageHandler = async (
     {
       booked: false,
       patient_id: null,
-      description: null,
-      booking_type: null,
+      
     },
     { new: true }
   );

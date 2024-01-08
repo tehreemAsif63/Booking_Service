@@ -34,15 +34,7 @@ const slotSchema = new Schema({
   patient_id: {
     type: String,
     required: false,
-  },
-  description: {
-    type: String,
-    required: false,
-  },
-  booking_type: {
-    type: String,
-    required: false,
-  },
+  }
 });
 slotSchema.index({start:1,dentist_id:1},{unique:true})
 export default mongoose.model("Slot", slotSchema);
