@@ -149,22 +149,22 @@ const getClinicSlots: MessageHandler = async (data) => {
   return slots;
 };
 
-const getClinicDentistSlots: MessageHandler = async (data) => {
+const getDentistSlots: MessageHandler = async (data) => {
   let query: FilterQuery<Slot> = {};
-  query = { clinic_id: data.clinic_id, dentist_id: data.dentist_id };
+  query = { dentist_id: data.dentist_id };
 
   const slots = await SlotSchema.find(query);
   if (!slots) {
     throw new MessageException({
       code: 400,
-      message: "Invalid Clinic/dentist id",
+      message: "Invalid dentist id",
     });
   }
 
   if (slots === null) {
     throw new MessageException({
       code: 400,
-      message: "Slot within that clinic does not exist",
+      message: "Slot  that dentist does not exist",
     });
   }
   return slots;
@@ -476,7 +476,7 @@ export default {
   getSlot,
   getSlots,
   getClinicSlots,
-  getClinicDentistSlots,
+  getDentistSlots,
   updateSlot,
   deleteSlot,
   bookSlot,
