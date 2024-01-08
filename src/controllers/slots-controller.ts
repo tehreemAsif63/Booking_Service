@@ -1,17 +1,14 @@
 import SlotSchema, { Slot } from "../schemas/slots";
 import { MessageException } from "../exceptions/MessageException";
 import { MessageHandler } from "../utilities/types-utils";
-import {
-  isBefore,
-  addMinutes,
-} from "date-fns";
+import { isBefore, addMinutes } from "date-fns";
 import mongoose, { FilterQuery } from "mongoose";
 
-export const createSlots: MessageHandler = async (data, requestInfo) => {
+const createSlots: MessageHandler = async (data, requestInfo) => {
   if (requestInfo.user?.userType !== "dentist") {
     throw new MessageException({
       code: 403,
-      message: "Forbidden", // testable
+      message: "Forbidden",
     });
   }
 
@@ -19,7 +16,7 @@ export const createSlots: MessageHandler = async (data, requestInfo) => {
     throw new MessageException({
       code: 403,
       message:
-        "To be able to create a slot, you have to be assigned to a clinic", // testable
+        "To be able to create a slot, you have to be assigned to a clinic",
     });
   }
 
@@ -34,7 +31,7 @@ export const createSlots: MessageHandler = async (data, requestInfo) => {
     // throw
     throw new MessageException({
       code: 403,
-      message: "Input missing data, All data required", // testable
+      message: "Input missing data, All data required",
     });
   }
 
@@ -57,7 +54,7 @@ export const createSlots: MessageHandler = async (data, requestInfo) => {
     if ((await registeredSlot).length > 0) {
       throw new MessageException({
         code: 403,
-        message: "Slot already exists for that time", // testable
+        message: "Slot already exists for that time",
       });
     }
 
@@ -75,11 +72,11 @@ export const createSlots: MessageHandler = async (data, requestInfo) => {
   return "Created";
 };
 
-export const createSlot: MessageHandler = async (data, requestInfo) => {
+const createSlot: MessageHandler = async (data, requestInfo) => {
   if (requestInfo.user?.userType !== "dentist") {
     throw new MessageException({
       code: 403,
-      message: "Forbidden", // testable
+      message: "Forbidden",
     });
   }
 
@@ -87,7 +84,7 @@ export const createSlot: MessageHandler = async (data, requestInfo) => {
     throw new MessageException({
       code: 403,
       message:
-        "To be able to create a slot, you have to be assigned to a clinic", // testable
+        "To be able to create a slot, you have to be assigned to a clinic",
     });
   }
 
@@ -98,7 +95,7 @@ export const createSlot: MessageHandler = async (data, requestInfo) => {
     // throw
     throw new MessageException({
       code: 403,
-      message: "Input missing data, All data required", // testable
+      message: "Input missing data, All data required",
     });
   }
 
@@ -112,7 +109,7 @@ export const createSlot: MessageHandler = async (data, requestInfo) => {
   if ((await registeredSlot).length > 0) {
     throw new MessageException({
       code: 403,
-      message: "Slot already exists for that time", // testable
+      message: "Slot already exists for that time",
     });
   }
 
@@ -128,7 +125,7 @@ export const createSlot: MessageHandler = async (data, requestInfo) => {
 
   return slot;
 };
-export const getClinicSlots: MessageHandler = async (data) => {
+const getClinicSlots: MessageHandler = async (data) => {
   let query: FilterQuery<Slot> = {};
   query = { clinic_id: data.clinic_id };
 
@@ -136,55 +133,55 @@ export const getClinicSlots: MessageHandler = async (data) => {
   if (!slots) {
     throw new MessageException({
       code: 400,
-      message: "Invalid clinic ID", // testable
+      message: "Invalid clinic ID",
     });
   }
 
   if (slots === null) {
     throw new MessageException({
       code: 400,
-      message: "Slot within that clinic does not exist", // TODO: Test
+      message: "Slot within that clinic does not exist",
     });
   }
   return slots;
 };
 
-export const getClinicDentistSlots: MessageHandler = async (data) => {
+const getDentistSlots: MessageHandler = async (data) => {
   let query: FilterQuery<Slot> = {};
-  query = { clinic_id: data.clinic_id, dentist_id: data.dentist_id };
+  query = { dentist_id: data.dentist_id };
 
   const slots = await SlotSchema.find(query);
   if (!slots) {
     throw new MessageException({
       code: 400,
-      message: "Invalid Clinic/dentist id", // testable
+      message: "Invalid dentist id",
     });
   }
 
   if (slots === null) {
     throw new MessageException({
       code: 400,
-      message: "Slot within that clinic does not exist", // TODO: Test
+      message: "Slot  that dentist does not exist",
     });
   }
   return slots;
 };
 
-export const getSlot: MessageHandler = async (data, requestInfo) => {
+const getSlot: MessageHandler = async (data, requestInfo) => {
   const { slot_id } = data;
   const slot = await SlotSchema.findById(slot_id);
 
   if (!slot) {
     throw new MessageException({
       code: 400,
-      message: "Invalid slot ID", // testable
+      message: "Invalid slot ID",
     });
   }
 
   if (slot === null) {
     throw new MessageException({
       code: 400,
-      message: "Slot does not exist", // TODO: create test
+      message: "Slot does not exist",
     });
   }
 
@@ -192,7 +189,7 @@ export const getSlot: MessageHandler = async (data, requestInfo) => {
 };
 
 //Get all slots
-export const getSlots: MessageHandler = async (data, requestInfo) => {
+const getSlots: MessageHandler = async (data, requestInfo) => {
   let query: FilterQuery<Slot> = {};
   if (requestInfo.user?.userType == "dentist") {
     query = {
@@ -207,23 +204,22 @@ export const getSlots: MessageHandler = async (data, requestInfo) => {
   }
 
   const slots = await SlotSchema.find(query);
-  
+
   let offset = requestInfo.query?.offset;
   let limit = requestInfo.query?.limit;
 
-  if (typeof offset !== 'number') {
+  if (typeof offset !== "number") {
     offset = 0; // default value if offset is undefined
   }
 
-  if (typeof limit !== 'number') {
+  if (typeof limit !== "number") {
     limit = 10; // default value if limit is undefined
   }
 
   // Check if offset and limit are valid integers
   if (!isNaN(offset) && !isNaN(limit) && offset >= 0 && limit > 0) {
     // Return paginated slots if offset and limit are provided
-    const paginatedSlots = await SlotSchema
-      .find(query)
+    const paginatedSlots = await SlotSchema.find(query)
       .skip(offset)
       .limit(limit);
   } else {
@@ -248,28 +244,21 @@ export const getSlots: MessageHandler = async (data, requestInfo) => {
 };
 
 // updateSlot fields -PATCH
-export const updateSlot: MessageHandler = async (data, requestInfo) => {
+const updateSlot: MessageHandler = async (data, requestInfo) => {
   if (requestInfo.user?.userType !== "dentist") {
     throw new MessageException({
       code: 403,
-      message: "Forbidden. Only dentists can perform this action.", // testable
+      message: "Forbidden. Only dentists can perform this action.",
     });
   }
-  const {
-    slot_id,
-    start,
-    end,
-    dentistId,
-    clinic_id,
-   
-  } = data;
+  const { slot_id, start, end, dentistId, clinic_id } = data;
   console.log("slotID", slot_id);
   // Check if the slot with the given ID exists
   const existingSlot = await SlotSchema.findById(slot_id);
   if (!existingSlot) {
     throw new MessageException({
       code: 400,
-      message: "Slot not found", // testable
+      message: "Slot not found",
     });
   }
 
@@ -278,7 +267,7 @@ export const updateSlot: MessageHandler = async (data, requestInfo) => {
     throw new MessageException({
       code: 422,
       message:
-        "Input missing data, All input fields are required to be filled.", // testable
+        "Input missing data, All input fields are required to be filled.",
     });
   }
 
@@ -292,7 +281,7 @@ export const updateSlot: MessageHandler = async (data, requestInfo) => {
   if (!updatedSlot) {
     throw new MessageException({
       code: 500,
-      message: "Failed to update slot", // testable
+      message: "Failed to update slot",
     });
   }
 
@@ -300,7 +289,7 @@ export const updateSlot: MessageHandler = async (data, requestInfo) => {
 };
 
 // delete slot with a specific ID
-export const deleteSlot: MessageHandler = async (data) => {
+const deleteSlot: MessageHandler = async (data) => {
   const { slot_id } = data;
 
   const slot = await SlotSchema.findByIdAndDelete(slot_id);
@@ -308,14 +297,14 @@ export const deleteSlot: MessageHandler = async (data) => {
   if (!slot) {
     throw new MessageException({
       code: 400,
-      message: "Invalid id", // testable
+      message: "Invalid id",
     });
   }
 
   if (slot === null) {
     throw new MessageException({
       code: 400,
-      message: "Slot does not exist", // TODO: implement test
+      message: "Slot does not exist",
     });
   }
   return "Slot deleted";
@@ -326,22 +315,20 @@ export const bookSlot: MessageHandler = async (
   requestInfo
 ) => {
   var { slot_id, patient_id } = data;
- 
-  
-  
+
   if (requestInfo.user?.userType == "patient") {
     patient_id = requestInfo.user?.id;
-  } else if (requestInfo.user?.userType == "dentist") {
+  } else if (requestInfo.user?.userType !== "dentist") {
     throw new MessageException({
       code: 403,
-      message: "Forbidden", // testable
+      message: "Forbidden",
     });
   }
 
   if (!slot_id || !patient_id) {
     throw new MessageException({
       code: 400,
-      message: "missing input needs to be specified", // testable
+      message: "missing input needs to be specified",
     });
   }
 
@@ -352,15 +339,16 @@ export const bookSlot: MessageHandler = async (
   ) {
     throw new MessageException({
       code: 400,
-      message: "Valid patient/slot ID needs to be specified", // testable
+      message: "Valid patient/slot ID needs to be specified",
     });
   }
-    
-  const slotData = await SlotSchema.findById(slot_id)
-  if(slotData?.booked){
-    throw new MessageException({  
+
+  const slotData = await SlotSchema.findById(slot_id);
+  if (slotData?.booked) {
+    throw new MessageException({
       code: 400,
-      message: "Forbidden, Slot already booked",})
+      message: "Forbidden, Slot already booked",
+    });
   }
 
   const slot = await SlotSchema.findByIdAndUpdate(
@@ -368,7 +356,6 @@ export const bookSlot: MessageHandler = async (
     {
       booked: true,
       patient_id: patient_id,
-      
     },
     { new: true }
   );
@@ -378,7 +365,7 @@ export const bookSlot: MessageHandler = async (
   if (!slot) {
     throw new MessageException({
       code: 404,
-      message: "Slot not found for update", // testable
+      message: "Slot not found for update",
     });
   }
   return slot;
@@ -393,7 +380,7 @@ export const unBookSlot: MessageHandler = async (
   if (!slot_id) {
     throw new MessageException({
       code: 400,
-      message: "slot_id needs to be specified", // testable
+      message: "slot_id needs to be specified",
     });
   }
 
@@ -401,7 +388,7 @@ export const unBookSlot: MessageHandler = async (
   if (!mongoose.Types.ObjectId.isValid(slot_id)) {
     throw new MessageException({
       code: 400,
-      message: "Valid patient/slot ID needs to be specified", // testable
+      message: "Valid patient/slot ID needs to be specified",
     });
   }
 
@@ -410,7 +397,7 @@ export const unBookSlot: MessageHandler = async (
   if (!slotData) {
     throw new MessageException({
       code: 404,
-      message: "Slot not found for update", // testable
+      message: "Slot not found for update",
     });
   }
 
@@ -419,21 +406,21 @@ export const unBookSlot: MessageHandler = async (
     requestInfo.user?.id !== slotData?.dentist_id
   ) {
     throw new MessageException({
-      code: 403,
-      message: "Forbidden action, slot belong to another dentist", // testable
+      code: 400,
+      message: "Forbidden action, slot belong to another dentist",
     });
   } else if (
     requestInfo.user?.userType == "patient" &&
     requestInfo.user?.id !== slotData?.patient_id
   ) {
     throw new MessageException({
-      code: 403,
-      message: "Forbidden action", // testable
+      code: 400,
+      message: "Forbidden action",
     });
   } else if (requestInfo.user?.userType == "admin") {
     throw new MessageException({
-      code: 403,
-      message: "Forbidden action", // testable
+      code: 400,
+      message: "Forbidden action",
     });
   }
   // booked = false;
@@ -442,7 +429,6 @@ export const unBookSlot: MessageHandler = async (
     {
       booked: false,
       patient_id: null,
-      
     },
     { new: true }
   );
@@ -450,11 +436,11 @@ export const unBookSlot: MessageHandler = async (
   return slotData;
 };
 
-export const deleteAllSlots: MessageHandler = async (data, requestInfo) => {
+const deleteAllSlots: MessageHandler = async (data, requestInfo) => {
   if (requestInfo.user?.userType !== "dentist") {
     throw new MessageException({
       code: 403,
-      message: "Forbidden", // testable
+      message: "Forbidden",
     });
   }
 
@@ -464,7 +450,7 @@ export const deleteAllSlots: MessageHandler = async (data, requestInfo) => {
   } else {
     throw new MessageException({
       code: 400,
-      message: "Database already empty", // testable
+      message: "Database already empty",
     });
   }
 };
@@ -475,7 +461,7 @@ export default {
   getSlot,
   getSlots,
   getClinicSlots,
-  getClinicDentistSlots,
+  getDentistSlots,
   updateSlot,
   deleteSlot,
   bookSlot,
