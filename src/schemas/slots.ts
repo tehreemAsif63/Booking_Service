@@ -3,10 +3,6 @@ import clinics from "./clinics";
 import mongoose from "mongoose";
 const Schema = mongoose.Schema;
 
-/**
- * time: The date and time of the registered slot
- * availability: The availability of the registered slot
- */
 const slotSchema = new Schema({
   start: {
     type: Date,
@@ -32,14 +28,6 @@ const slotSchema = new Schema({
     required: true,
   },
   patient_id: {
-    type: String,
-    required: false,
-  },
-  description: {
-    type: String,
-    required: false,
-  },
-  booking_type: {
     type: String,
     required: false,
   },
