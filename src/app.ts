@@ -39,6 +39,11 @@ const messageMapping: { [key: string]: MessageHandler } = {
   "slots/delete": slotsController.deleteAllSlots,
   //--------------
   "emergency-slots/score": emergencySlotsController.getScore,
+  "emergency-slots/create": emergencySlotsController.createEmergencySlot,
+  "emergency-slots/:date": emergencySlotsController.getEmergencySlots,
+  "emergency-slots/delete/:emergencySlot_id":
+    emergencySlotsController.deleteEmergencySlot,
+  "emergency-slots/results": emergencySlotsController.getResult,
 };
 
 client.on("connect", () => {
