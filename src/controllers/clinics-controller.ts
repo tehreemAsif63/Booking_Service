@@ -25,7 +25,7 @@ export const createClinic: MessageHandler = async (data, requestInfo) => {
     throw new MessageException({
       code: 422,
       message:
-        "Input missing data, All input fields are required to be filled.",
+        "Input missing data, All input fields are required to be filled.", // testable
     });
   }
 
@@ -35,7 +35,7 @@ export const createClinic: MessageHandler = async (data, requestInfo) => {
   if ((await registeredClinic).length > 0) {
     throw new MessageException({
       code: 422,
-      message: "Clinic already exists",
+      message: "Clinic already exists", // testable
     });
   }
   // Create a new clinic
@@ -68,7 +68,7 @@ export const getAllClinics: MessageHandler = async (data) => {
   } catch (error) {
     throw new MessageException({
       code: 500,
-      message: "Failed to find clinics",
+      message: "Failed to find clinics", // testable
     });
   }
 };
@@ -81,7 +81,7 @@ export const getClinic: MessageHandler = async (data) => {
   if (!clinic) {
     throw new MessageException({
       code: 404,
-      message: "Not found. Clinic does not exists.",
+      message: "Not found. Clinic does not exists.", // testable
     });
   }
 
@@ -100,7 +100,7 @@ export const updateClinic: MessageHandler = async (data, requestInfo) => {
     throw new MessageException({
       code: 422,
       message:
-        "Input missing data, All input fields are required to be filled.",
+        "Input missing data, All input fields are required to be filled.", // testable
     });
   }
 
@@ -109,7 +109,7 @@ export const updateClinic: MessageHandler = async (data, requestInfo) => {
   if (!existingClinic) {
     throw new MessageException({
       code: 400,
-      message: "Not found. Clinic not found",
+      message: "Not found. Clinic not found", // testable
     });
   }
 
@@ -142,7 +142,7 @@ export const deleteClinic: MessageHandler = async (data, requestInfo) => {
   if (!clinic) {
     throw new MessageException({
       code: 404,
-      message: "Not found. Clinic does not exist.",
+      message: "Not found. Clinic does not exist.", // testable
     });
   }
   return `Clinic deleted successfully.`;
@@ -158,7 +158,7 @@ export const deleteAllClinics: MessageHandler = async (data, requestInfo) => {
   if (clinicSchema === null) {
     throw new MessageException({
       code: 500,
-      message: "Database is already empty",
+      message: "Database is already empty", // testable
     });
   }
 

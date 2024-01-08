@@ -1,10 +1,7 @@
 import SlotSchema, { Slot } from "../schemas/slots";
 import { MessageException } from "../exceptions/MessageException";
 import { MessageHandler } from "../utilities/types-utils";
-import {
-  isBefore,
-  addMinutes,
-} from "date-fns";
+import { isBefore, addMinutes } from "date-fns";
 import mongoose, { FilterQuery } from "mongoose";
 
 const createSlots: MessageHandler = async (data, requestInfo) => {
@@ -207,23 +204,22 @@ const getSlots: MessageHandler = async (data, requestInfo) => {
   }
 
   const slots = await SlotSchema.find(query);
-  
+
   let offset = requestInfo.query?.offset;
   let limit = requestInfo.query?.limit;
 
-  if (typeof offset !== 'number') {
+  if (typeof offset !== "number") {
     offset = 0; // default value if offset is undefined
   }
 
-  if (typeof limit !== 'number') {
+  if (typeof limit !== "number") {
     limit = 10; // default value if limit is undefined
   }
 
   // Check if offset and limit are valid integers
   if (!isNaN(offset) && !isNaN(limit) && offset >= 0 && limit > 0) {
     // Return paginated slots if offset and limit are provided
-    const paginatedSlots = await SlotSchema
-      .find(query)
+    const paginatedSlots = await SlotSchema.find(query)
       .skip(offset)
       .limit(limit);
   } else {
@@ -255,14 +251,7 @@ const updateSlot: MessageHandler = async (data, requestInfo) => {
       message: "Forbidden. Only dentists can perform this action.",
     });
   }
-  const {
-    slot_id,
-    start,
-    end,
-    dentistId,
-    clinic_id,
-   
-  } = data;
+  const { slot_id, start, end, dentistId, clinic_id } = data;
   console.log("slotID", slot_id);
   // Check if the slot with the given ID exists
   const existingSlot = await SlotSchema.findById(slot_id);
@@ -321,15 +310,12 @@ const deleteSlot: MessageHandler = async (data) => {
   return "Slot deleted";
 };
 
-
 const bookSlot: MessageHandler = async (
   data: { slot_id?: string; patient_id?: string },
   requestInfo
 ) => {
   var { slot_id, patient_id } = data;
- 
-  
-  
+
   if (requestInfo.user?.userType == "patient") {
     patient_id = requestInfo.user?.id;
   } else if (requestInfo.user?.userType !== "dentist") {
@@ -356,12 +342,13 @@ const bookSlot: MessageHandler = async (
       message: "Valid patient/slot ID needs to be specified",
     });
   }
-    
-  const slotData = await SlotSchema.findById(slot_id)
-  if(slotData?.booked){
-    throw new MessageException({  
+
+  const slotData = await SlotSchema.findById(slot_id);
+  if (slotData?.booked) {
+    throw new MessageException({
       code: 400,
-      message: "Forbidden, Slot already booked",})
+      message: "Forbidden, Slot already booked",
+    });
   }
 
   const slot = await SlotSchema.findByIdAndUpdate(
@@ -369,7 +356,6 @@ const bookSlot: MessageHandler = async (
     {
       booked: true,
       patient_id: patient_id,
-      
     },
     { new: true }
   );
@@ -443,7 +429,6 @@ const unBookSlot: MessageHandler = async (
     {
       booked: false,
       patient_id: null,
-      
     },
     { new: true }
   );

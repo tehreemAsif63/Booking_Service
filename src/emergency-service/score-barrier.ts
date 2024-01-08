@@ -1,21 +1,14 @@
-/*
-TODO
-Admin shall be able to manually change the barriers
-
-Method Explanation
- - checkOverBarrier
-   Figure out if the emergency score is over the barrier.
- - countFunctionCalls
-   Check the demand on the emergency reservation system.
-**/
-
 const counter = {
   count: 0,
 };
 
 let currentDate = new Date().toDateString();
 
-// Check the number of method calls per day
+/**
+ * About:
+ * This function has been created with the intention to adjust the barrier to the access of emergency service based on the live demand.
+ * The counter is reset at the start of the new day since our demand is based on a single day.
+ */
 function countFunctionCalls(counter) {
   const today = new Date().toDateString();
 
@@ -27,24 +20,33 @@ function countFunctionCalls(counter) {
   return counter.count;
 }
 
-// Check if the emergency score is over the barrier or not
-function checkOverBarrier(emergencyScore) {
+/**
+ * About:
+ * Based on the counter value, the score that the patient has to pass increases.
+ * Based on the highest score possible (63.4), I have set the barriers as 20, 30, 40 for honestly no particular reason.
+ */
+
+export function checkOverBarrier(emergencyScore) {
   const callsCount = countFunctionCalls(counter);
-  if (callsCount < 30) {
-    return emergencyScore >= 40;
-  } else if (callsCount >= 30 && callsCount < 50) {
-    return emergencyScore > 60;
+
+  if (callsCount < 10) {
+    const isOverBarrier = emergencyScore >= 20;
+    console.log(
+      `Emergency score (${emergencyScore}) is over the barrier: ${isOverBarrier}`,
+      callsCount
+    );
+    return isOverBarrier;
+  } else if (callsCount >= 10 && callsCount < 50) {
+    const isOverBarrier = emergencyScore > 30;
+    console.log(
+      `Emergency score (${emergencyScore}) is over the barrier: ${isOverBarrier}`
+    );
+    return isOverBarrier;
   } else {
-    return emergencyScore > 70;
+    const isOverBarrier = emergencyScore > 40;
+    console.log(
+      `Emergency score (${emergencyScore}) is over the barrier: ${isOverBarrier}`
+    );
+    return isOverBarrier;
   }
 }
-
-// Debug line
-/*
-for (let i = 1; i <= 80; i++) {
-  const number = i;
-  const result = checkOverBarrier(number);
-  console.log(result);
-  console.log(counter);
-}
-**/
