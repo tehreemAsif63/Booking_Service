@@ -28,6 +28,7 @@ const messageMapping: { [key: string]: MessageHandler } = {
   "slots/create/many": slotsController.createSlots,
   "slots/create": slotsController.createSlot,
   "slots/all": slotsController.getSlots,
+  "slots/patient": slotsController.getPatientSlots,
   "slots/:slot_id": slotsController.getSlot,
   "slots/clinic": slotsController.getClinicSlots,
   "slots/dentist": slotsController.getDentistSlots,

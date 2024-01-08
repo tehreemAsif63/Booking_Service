@@ -189,6 +189,57 @@ const getSlot: MessageHandler = async (data, requestInfo) => {
 };
 
 //Get all slots
+const getPatientSlots: MessageHandler = async (data, requestInfo) => {
+  let query: FilterQuery<Slot> = {};
+
+  if (requestInfo.user?.userType == "patient") {
+    query = {
+      patient_id: requestInfo.user.id,
+    };
+  }
+
+  const slots = await SlotSchema.find(query);
+  
+  let offset = requestInfo.query?.offset;
+  let limit = requestInfo.query?.limit;
+
+  if (typeof offset !== 'number') {
+    offset = 0; // default value if offset is undefined
+  }
+
+  if (typeof limit !== 'number') {
+    limit = 10; // default value if limit is undefined
+  }
+
+  // Check if offset and limit are valid integers
+  if (!isNaN(offset) && !isNaN(limit) && offset >= 0 && limit > 0) {
+    // Return paginated slots if offset and limit are provided
+    const paginatedSlots = await SlotSchema
+      .find(query)
+      .skip(offset)
+      .limit(limit);
+  } else {
+    // Return all notifications if offset and limit are not provided
+    const slots = await SlotSchema.find(query);
+  }
+
+  if (!slots) {
+    throw new MessageException({
+      code: 400,
+      message: "Invalid slot ID", //can there really be an invalid slot id if we are getting all slots?
+    });
+  }
+
+  if (slots === null) {
+    throw new MessageException({
+      code: 400,
+      message: "Slot does not exist", //we may have to get rid of both errors since a user might have no slots booked
+    });
+  }
+  return slots;
+};
+
+
 const getSlots: MessageHandler = async (data, requestInfo) => {
   let query: FilterQuery<Slot> = {};
   if (requestInfo.user?.userType == "dentist") {
@@ -197,11 +248,7 @@ const getSlots: MessageHandler = async (data, requestInfo) => {
     };
   }
 
-  if (requestInfo.user?.userType == "patient") {
-    query = {
-      patient_id: requestInfo.user.id,
-    };
-  }
+
 
   const slots = await SlotSchema.find(query);
 
@@ -462,6 +509,7 @@ export default {
   getSlots,
   getClinicSlots,
   getDentistSlots,
+  getPatientSlots,
   updateSlot,
   deleteSlot,
   bookSlot,
