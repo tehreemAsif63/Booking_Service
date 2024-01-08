@@ -21,7 +21,9 @@
     </testcase>
     <testcase classname="updateClinic should return Forbidden. Only admins can perform this action." name="updateClinic should return Forbidden. Only admins can perform this action." time="0.003">
     </testcase>
-    <testcase classname="updateClinic should return Not found. Clinic not found" name="updateClinic should return Not found. Clinic not found" time="0.002">
+  </testsuite>
+  <testsuite name="getClinicSlots" errors="0" failures="0" skipped="0" timestamp="2024-01-02T17:29:02" time="7.62" tests="1">
+    <testcase classname="getClinicSlots should throw an exception for an invalid clinic ID" name="getClinicSlots should throw an exception for an invalid clinic ID" time="0.032">
     </testcase>
   </testsuite>
   <testsuite name="updateEmergencySlot" errors="0" failures="0" skipped="0" timestamp="2023-12-13T12:57:37" time="11.326" tests="3">
@@ -59,7 +61,7 @@
     </testcase>
     <testcase classname="updateSlot should return Input missing data, All input fields are required to be filled." name="updateSlot should return Input missing data, All input fields are required to be filled." time="0.006">
     </testcase>
-    <testcase classname="updateSlot should return Failed to update slot" name="updateSlot should return Failed to update slot" time="0.003">
+    <testcase classname="unbookSlot should throw forbidden action, slot belong to another dentist" name="unbookSlot should throw forbidden action, slot belong to another dentist" time="0.001">
     </testcase>
   </testsuite>
   <testsuite name="getSlot" errors="0" failures="0" skipped="0" timestamp="2023-12-13T12:57:49" time="1.556" tests="2">
@@ -71,7 +73,7 @@
   <testsuite name="deleteClinic" errors="0" failures="0" skipped="0" timestamp="2023-12-13T12:57:49" time="1.508" tests="2">
     <testcase classname="deleteClinic should return Not found. Clinic does not exist." name="deleteClinic should return Not found. Clinic does not exist." time="0.037">
     </testcase>
-    <testcase classname="deleteClinic should delete the clinic if all conditions are met." name="deleteClinic should delete the clinic if all conditions are met." time="0.001">
+    <testcase classname="unbookSlot should throw forbidden action upon request of admin" name="unbookSlot should throw forbidden action upon request of admin" time="0.001">
     </testcase>
   </testsuite>
   <testsuite name="createSlot" errors="0" failures="0" skipped="0" timestamp="2023-12-13T12:57:50" time="1.494" tests="3">

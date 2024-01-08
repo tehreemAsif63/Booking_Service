@@ -5,7 +5,7 @@ import ClinicSchema from "../schemas/clinics";
 jest.mock("../schemas/clinics");
 
 describe("getClinic", () => {
-  it("should return Not found. Clinic does not exist.", async () => {
+  it("should return clinic if found", async () => {
     const exampleClinic = { clinic_id: "exampleId" };
 
     const findByIdSpy = jest.spyOn(ClinicSchema, "findById");
