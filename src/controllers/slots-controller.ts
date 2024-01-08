@@ -1,12 +1,8 @@
 import SlotSchema, { Slot } from "../schemas/slots";
-import clinicSchema, { Clinic } from "../schemas/clinics";
 import { MessageException } from "../exceptions/MessageException";
 import { MessageHandler } from "../utilities/types-utils";
 import {
   isBefore,
-  setHours,
-  setMinutes,
-  setSeconds,
   addMinutes,
 } from "date-fns";
 import mongoose, { FilterQuery } from "mongoose";
@@ -265,8 +261,7 @@ export const updateSlot: MessageHandler = async (data, requestInfo) => {
     end,
     dentistId,
     clinic_id,
-    description,
-    booking_type,
+   
   } = data;
   console.log("slotID", slot_id);
   // Check if the slot with the given ID exists
@@ -290,7 +285,7 @@ export const updateSlot: MessageHandler = async (data, requestInfo) => {
   // Perform the partial update
   const updatedSlot = await SlotSchema.findByIdAndUpdate(
     slot_id,
-    { start, end, dentist_id: dentistId, clinic_id, description, booking_type },
+    { start, end, dentist_id: dentistId, clinic_id },
     { new: true, runValidators: true }
   );
 
@@ -331,7 +326,9 @@ export const bookSlot: MessageHandler = async (
   requestInfo
 ) => {
   var { slot_id, patient_id } = data;
-
+ 
+  
+  
   if (requestInfo.user?.userType == "patient") {
     patient_id = requestInfo.user?.id;
   } else if (requestInfo.user?.userType == "dentist") {
@@ -358,13 +355,20 @@ export const bookSlot: MessageHandler = async (
       message: "Valid patient/slot ID needs to be specified", // testable
     });
   }
+    
+  const slotData = await SlotSchema.findById(slot_id)
+  if(slotData?.booked){
+    throw new MessageException({  
+      code: 400,
+      message: "Forbidden, Slot already booked",})
+  }
+
   const slot = await SlotSchema.findByIdAndUpdate(
     slot_id,
     {
       booked: true,
       patient_id: patient_id,
-      description: "checkup",
-      booking_type: null,
+      
     },
     { new: true }
   );
@@ -438,8 +442,7 @@ export const unBookSlot: MessageHandler = async (
     {
       booked: false,
       patient_id: null,
-      description: null,
-      booking_type: null,
+      
     },
     { new: true }
   );
