@@ -5,7 +5,7 @@ import EmergencySlotSchema from "../schemas/emergencySlots";
  * About:
  * Though a user may have passed the passed the first filter, I thought that there should be a secondary filter depending on the demand.
  * The secondary filter depends on the supply of the emergency slots.
- * When the availability of the emergency slots (score / availableEmergencySlots) is higher than 0.4, the user can get a direct pass.
+ * When the availability of the emergency slots (availableEmergencySlots / totalEmergencySlots) is higher than 0.4, the user can get a direct pass.
  * However, when the availability is lower than 0.4, the users have to have a higher score than the average.
  */
 export async function calculateAverageScore() {
@@ -29,12 +29,11 @@ export async function calculateAverageScore() {
   }
 }
 
-const average = calculateAverageScore();
-
 /**
  * About:
  * As mentioned above, this function calculates the availability of the emergency slots.
- * I decided to use the number of emergencyScores because we only allow one submission per day.
+ * The availability is checked by seein the ratio between All Slots available for the next day and the Booked Slots.
+ * Availability = (Unbooked Slots) / (All Slots)
  */
 export async function checkAvailability() {
   try {
@@ -50,17 +49,27 @@ export async function checkAvailability() {
       booked: false,
     });
 
-    const numSlots = unbookedSlot.length;
+    const allSlots: { _id: string }[] = await EmergencySlotSchema.find({
+      start: {
+        $gte: tomorrow,
+        $lt: new Date(tomorrow.getTime() + 24 * 60 * 60 * 1000),
+      },
+    });
 
-    const emergencyScores: { emergencyScore: number }[] =
-      await ScoreSchema.find({}, "emergencyScore");
+    const numUnbookedSlots = unbookedSlot.length;
+    const numAllSlots = allSlots.length;
 
-    const numberOfScores = emergencyScores.length;
-    const availability = numSlots / numberOfScores;
+    let availability = numUnbookedSlots / numAllSlots;
 
-    console.log("Unbooked Slots: ", numSlots);
-    console.log("Availability: ", availability);
-    return availability;
+    if (numAllSlots == 0) {
+      availability = 0;
+      console.log("NumOfSlots is 0", numAllSlots);
+      console.log("Availability: ", availability);
+      return availability;
+    } else {
+      console.log("Availability: ", availability);
+      return availability;
+    }
   } catch (err) {
     console.error("An error occured while counting documents: ", err);
   }
@@ -74,9 +83,10 @@ export async function checkAvailability() {
 export async function isActivated(myScore) {
   try {
     const availability = await checkAvailability();
+    const average = await calculateAverageScore();
 
     if (availability !== undefined && availability < 0.4) {
-      console.log("Filter Activated: ", myScore > average);
+      console.log("Filter Activated: ", myScore > average, average);
       return myScore > average;
     } else {
       return true;

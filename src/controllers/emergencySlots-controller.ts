@@ -1,4 +1,5 @@
 import EmergencySlotSchema from "../schemas/emergencySlots";
+import SlotSchema from "../schemas/slots";
 import clinicSchema, { Clinic } from "../schemas/clinics";
 import ScoreSchema from "../schemas/score";
 import { MessageException } from "../exceptions/MessageException";
@@ -106,24 +107,28 @@ export const createEmergencySlot: MessageHandler = async (
     });
   }
 
-  console.log("Converted Start Date:", startDate);
-  console.log("Converted End Date:", endDate);
-
-  const registeredSlot = EmergencySlotSchema.find({
+  const registeredSlot = await EmergencySlotSchema.find({
     start: startDate,
     end: endDate,
     clinic_id,
     dentist_id,
   });
 
-  console.log("Query:", {
+  if (registeredSlot.length > 0) {
+    throw new MessageException({
+      code: 403,
+      message: "The following slot already exists",
+    });
+  }
+
+  const registerSlot = new EmergencySlotSchema({
     start: startDate,
     end: endDate,
     clinic_id,
     dentist_id,
   });
 
-  console.log("Registered Slots:", await registeredSlot);
+  registerSlot.save();
 };
 
 export const deleteEmergencySlot: MessageHandler = async (
@@ -132,14 +137,27 @@ export const deleteEmergencySlot: MessageHandler = async (
 ) => {
   const { emergencySlot_id } = data;
 
-  const emergencySlot = EmergencySlotSchema.findById(emergencySlot_id);
+  const emergencySlot = await EmergencySlotSchema.findById(emergencySlot_id);
 
+  if (requestInfo.user?.userType !== "dentist") {
+    throw new MessageException({
+      code: 403,
+      message: "Only dentists are allowed to perform this action",
+    });
+  }
+  if (emergencySlot?.booked == true) {
+    throw new MessageException({
+      code: 403,
+      message: "Booked emergency slots are not allowed to be deleted.",
+    });
+  }
   if (!emergencySlot) {
     throw new MessageException({
       code: 404,
       message: "Emergency slot does not exist",
     });
   }
+
   try {
     await EmergencySlotSchema.deleteOne({ _id: emergencySlot_id });
     console.log("Slot deleted!", emergencySlot_id);
@@ -202,10 +220,66 @@ export const getResult: MessageHandler = async (data, requestInfo) => {
       console.log(isEmergency);
     } else {
       console.log("Emergency case");
-      console.log(isEmergency);
+      bookEmergencySlot({ user_id }, requestInfo);
     }
   } catch (err) {
     console.error(err);
+  }
+};
+
+const bookEmergencySlot: MessageHandler = async (user_id, requestInfo) => {
+  const stringUserId = requestInfo.user?.id;
+
+  try {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(0, 0, 0, 0);
+
+    const bookedEmergencySlots: { user_id }[] = await EmergencySlotSchema.find({
+      start: {
+        $gte: tomorrow,
+        $lt: new Date(tomorrow.getTime() + 24 * 60 * 60 * 1000),
+      },
+      user_id: stringUserId,
+    });
+
+    if (bookedEmergencySlots.length > 0) {
+      throw new MessageException({
+        code: 403,
+        message: "You have already booked for thsi date.",
+      });
+    }
+    const emergencySlots: { _id: string }[] = await EmergencySlotSchema.find({
+      start: {
+        $gte: tomorrow,
+        $lt: new Date(tomorrow.getTime() + 24 * 60 * 60 * 1000),
+      },
+      booked: false,
+    });
+
+    if (emergencySlots.length > 0) {
+      const toBeBooked = emergencySlots.shift();
+      const toBeBookedId = toBeBooked?._id;
+
+      const emergencySlot = await EmergencySlotSchema.findByIdAndUpdate(
+        toBeBookedId,
+        {
+          booked: true,
+          user_id: stringUserId,
+        },
+        { new: true }
+      );
+      console.log(emergencySlot);
+      return emergencySlot;
+    } else {
+      throw new MessageException({
+        code: 404,
+        message:
+          "Sorry but our emergency booking system is at maximum capacity.",
+      });
+    }
+  } catch (err) {
+    console.error("An error occured: ", err);
   }
 };
 
