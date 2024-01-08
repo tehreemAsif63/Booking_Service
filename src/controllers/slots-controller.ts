@@ -326,12 +326,15 @@ const deleteSlot: MessageHandler = async (data) => {
   return "Slot deleted";
 };
 
+
 const bookSlot: MessageHandler = async (
   data: { slot_id?: string; patient_id?: string },
   requestInfo
 ) => {
   var { slot_id, patient_id } = data;
-
+ 
+  
+  
   if (requestInfo.user?.userType == "patient") {
     patient_id = requestInfo.user?.id;
   } else if (requestInfo.user?.userType !== "dentist") {
@@ -358,6 +361,14 @@ const bookSlot: MessageHandler = async (
       message: "Valid patient/slot ID needs to be specified",
     });
   }
+    
+  const slotData = await SlotSchema.findById(slot_id)
+  if(slotData?.booked){
+    throw new MessageException({  
+      code: 400,
+      message: "Forbidden, Slot already booked",})
+  }
+
   const slot = await SlotSchema.findByIdAndUpdate(
     slot_id,
     {
