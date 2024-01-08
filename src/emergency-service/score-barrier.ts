@@ -1,12 +1,12 @@
 /*
-TODO
-Admin shall be able to manually change the barriers
-
 Method Explanation
  - checkOverBarrier
    Figure out if the emergency score is over the barrier.
  - countFunctionCalls
    Check the demand on the emergency reservation system.
+
+The intention of this filter is to see if the user's emergency score is higher than the barrier score.
+The barrier score is altered depending on the demand on the emergency service.
 **/
 
 const counter = {
@@ -28,14 +28,28 @@ function countFunctionCalls(counter) {
 }
 
 // Check if the emergency score is over the barrier or not
-function checkOverBarrier(emergencyScore) {
+export function checkOverBarrier(emergencyScore) {
   const callsCount = countFunctionCalls(counter);
-  if (callsCount < 30) {
-    return emergencyScore >= 40;
-  } else if (callsCount >= 30 && callsCount < 50) {
-    return emergencyScore > 60;
+
+  if (callsCount < 10) {
+    const isOverBarrier = emergencyScore >= 20;
+    console.log(
+      `Emergency score (${emergencyScore}) is over the barrier: ${isOverBarrier}`,
+      callsCount
+    );
+    return isOverBarrier;
+  } else if (callsCount >= 10 && callsCount < 50) {
+    const isOverBarrier = emergencyScore > 30;
+    console.log(
+      `Emergency score (${emergencyScore}) is over the barrier: ${isOverBarrier}`
+    );
+    return isOverBarrier;
   } else {
-    return emergencyScore > 70;
+    const isOverBarrier = emergencyScore > 40;
+    console.log(
+      `Emergency score (${emergencyScore}) is over the barrier: ${isOverBarrier}`
+    );
+    return isOverBarrier;
   }
 }
 
