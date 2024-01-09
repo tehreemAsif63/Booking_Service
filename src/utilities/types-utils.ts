@@ -6,7 +6,6 @@ export type RequestInfo = {
     id: string;
     email: string;
     userType: string;
-    blackList: boolean;
     admin: boolean;
     clinic_id?: string;
   };

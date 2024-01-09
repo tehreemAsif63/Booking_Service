@@ -4,7 +4,7 @@ import { MessageHandler } from "../utilities/types-utils";
 import { isBefore, addMinutes } from "date-fns";
 import mongoose, { FilterQuery } from "mongoose";
 
-const createSlots: MessageHandler = async (data, requestInfo) => {
+export const createSlots: MessageHandler = async (data, requestInfo) => {
   if (requestInfo.user?.userType !== "dentist") {
     throw new MessageException({
       code: 403,
@@ -72,7 +72,7 @@ const createSlots: MessageHandler = async (data, requestInfo) => {
   return "Created";
 };
 
-const createSlot: MessageHandler = async (data, requestInfo) => {
+export const createSlot: MessageHandler = async (data, requestInfo) => {
   if (requestInfo.user?.userType !== "dentist") {
     throw new MessageException({
       code: 403,
@@ -125,7 +125,7 @@ const createSlot: MessageHandler = async (data, requestInfo) => {
 
   return slot;
 };
-const getClinicSlots: MessageHandler = async (data) => {
+export const getClinicSlots: MessageHandler = async (data) => {
   let query: FilterQuery<Slot> = {};
   query = { clinic_id: data.clinic_id };
 
@@ -146,7 +146,7 @@ const getClinicSlots: MessageHandler = async (data) => {
   return slots;
 };
 
-const getDentistSlots: MessageHandler = async (data) => {
+export const getDentistSlots: MessageHandler = async (data) => {
   let query: FilterQuery<Slot> = {};
   query = { dentist_id: data.dentist_id };
 
@@ -167,7 +167,7 @@ const getDentistSlots: MessageHandler = async (data) => {
   return slots;
 };
 
-const getSlot: MessageHandler = async (data, requestInfo) => {
+export const getSlot: MessageHandler = async (data, requestInfo) => {
   const { slot_id } = data;
   const slot = await SlotSchema.findById(slot_id);
 
@@ -213,9 +213,7 @@ const getPatientSlots: MessageHandler = async (data, requestInfo) => {
     });
   }
   return slots;
-  
 };
-
 
 const getSlots: MessageHandler = async (data, requestInfo) => {
   let query: FilterQuery<Slot> = {};
@@ -244,7 +242,7 @@ const getSlots: MessageHandler = async (data, requestInfo) => {
 };
 
 // updateSlot fields -PATCH
-const updateSlot: MessageHandler = async (data, requestInfo) => {
+export const updateSlot: MessageHandler = async (data, requestInfo) => {
   if (requestInfo.user?.userType !== "dentist") {
     throw new MessageException({
       code: 403,
@@ -289,7 +287,7 @@ const updateSlot: MessageHandler = async (data, requestInfo) => {
 };
 
 // delete slot with a specific ID
-const deleteSlot: MessageHandler = async (data) => {
+export const deleteSlot: MessageHandler = async (data) => {
   const { slot_id } = data;
 
   const slot = await SlotSchema.findByIdAndDelete(slot_id);
@@ -310,7 +308,7 @@ const deleteSlot: MessageHandler = async (data) => {
   return "Slot deleted";
 };
 
-const bookSlot: MessageHandler = async (
+export const bookSlot: MessageHandler = async (
   data: { slot_id?: string; patient_id?: string },
   requestInfo
 ) => {
@@ -371,7 +369,7 @@ const bookSlot: MessageHandler = async (
   return slot;
 };
 
-const unBookSlot: MessageHandler = async (
+export const unBookSlot: MessageHandler = async (
   data: { slot_id?: string },
   requestInfo
 ) => {
@@ -436,7 +434,7 @@ const unBookSlot: MessageHandler = async (
   return slotData;
 };
 
-const deleteAllSlots: MessageHandler = async (data, requestInfo) => {
+export const deleteAllSlots: MessageHandler = async (data, requestInfo) => {
   if (requestInfo.user?.userType !== "dentist") {
     throw new MessageException({
       code: 403,

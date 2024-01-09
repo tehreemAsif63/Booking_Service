@@ -58,7 +58,6 @@ export const getScore: MessageHandler = async (
     const emergencyScores = new ScoreSchema({
       emergencyScore: data?.score,
       userId: requestInfo?.user?.id,
-      blackList: requestInfo?.user?.blackList,
     });
     emergencyScores.save();
   }
@@ -220,13 +219,12 @@ export const getResult: MessageHandler = async (data, requestInfo) => {
       console.log(isEmergency);
     } else {
       console.log("Emergency case");
-      bookEmergencySlot({ user_id }, requestInfo);
+      return bookEmergencySlot({ user_id }, requestInfo);
     }
   } catch (err) {
     console.error(err);
   }
 };
-
 const bookEmergencySlot: MessageHandler = async (user_id, requestInfo) => {
   const stringUserId = requestInfo.user?.id;
 
@@ -243,13 +241,10 @@ const bookEmergencySlot: MessageHandler = async (user_id, requestInfo) => {
       user_id: stringUserId,
     });
 
-    if (bookedEmergencySlots.length > 0) {
-      throw new MessageException({
-        code: 403,
-        message: "You have already booked for thsi date.",
-      });
-    }
-    const emergencySlots: { _id: string }[] = await EmergencySlotSchema.find({
+    const emergencySlots: {
+      _id: string;
+      clinic_id: Object;
+    }[] = await EmergencySlotSchema.find({
       start: {
         $gte: tomorrow,
         $lt: new Date(tomorrow.getTime() + 24 * 60 * 60 * 1000),
@@ -257,9 +252,38 @@ const bookEmergencySlot: MessageHandler = async (user_id, requestInfo) => {
       booked: false,
     });
 
+    if (bookedEmergencySlots.length > 0) {
+      const toBeBooked = emergencySlots.shift();
+      const toBeBookedId = toBeBooked?._id;
+      const clinicId = toBeBooked?.clinic_id;
+
+      const clinicInfo = await clinicSchema.findOne(
+        { _id: clinicId },
+        "clinicName address"
+      );
+
+      const emergencySlot = await EmergencySlotSchema.findOne({
+        _id: toBeBookedId,
+      });
+
+      const result = {
+        ...emergencySlot?.toObject(),
+        clinicName: clinicInfo?.clinicName,
+        address: clinicInfo?.address,
+      };
+      console.log(result);
+      return result;
+    }
+
     if (emergencySlots.length > 0) {
       const toBeBooked = emergencySlots.shift();
       const toBeBookedId = toBeBooked?._id;
+      const clinicId = toBeBooked?.clinic_id;
+
+      const clinicInfo = await clinicSchema.findOne(
+        { _id: clinicId },
+        "clinicName address"
+      );
 
       const emergencySlot = await EmergencySlotSchema.findByIdAndUpdate(
         toBeBookedId,
@@ -269,8 +293,14 @@ const bookEmergencySlot: MessageHandler = async (user_id, requestInfo) => {
         },
         { new: true }
       );
-      console.log(emergencySlot);
-      return emergencySlot;
+
+      const result = {
+        ...emergencySlot?.toObject(),
+        clinicName: clinicInfo?.clinicName,
+        address: clinicInfo?.address,
+      };
+      console.log(result);
+      return result;
     } else {
       throw new MessageException({
         code: 404,
