@@ -5,7 +5,7 @@ import slotsController from "./controllers/slots-controller";
 import clinicsController from "./controllers/clinics-controller";
 import emergencySlotsController from "./controllers/emergencySlots-controller";
 import ScoreSchema from "./schemas/score";
-
+import schedule from "node-schedule";
 import {
   MessageData,
   MessageHandler,
@@ -28,6 +28,7 @@ const messageMapping: { [key: string]: MessageHandler } = {
   "slots/create/many": slotsController.createSlots,
   "slots/create": slotsController.createSlot,
   "slots/all": slotsController.getSlots,
+  "slots/patient": slotsController.getPatientSlots,
   "slots/:slot_id": slotsController.getSlot,
   "slots/clinic": slotsController.getClinicSlots,
   "slots/dentist": slotsController.getDentistSlots,

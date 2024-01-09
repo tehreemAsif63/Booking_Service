@@ -1,92 +1,66 @@
-# User_Service
+# Booking Service
+
+Our service enables the general public to book appointments with dentists. Dentists play a crucial role in the system, and this service allows them to sign up, log in, and modify their information.
+
+# Technology Used
+We utilize MQTT for efficient communication between the system components. This choice is driven by its advantages in low bandwidth usage, real-time communication, and asynchronous messaging. However, it's crucial to address potential security concerns and the learning curve associated with the publish/subscribe paradigm.
+
+# Controllers
+The service includes various controllers for creating and managing clinics, appointment slots, and emergency slots.
+
+## Clinic Controllers
+- Create Clinic: Creates a new clinic.
+- Get All Clinics: Retrieves information about all clinics.
+- Get Clinic: Retrieves information about a specific clinic.
+- Update Clinic: Updates information about a clinic.
+- Delete Clinic: Deletes a specific clinic.
+- Delete All Clinics: Deletes all clinics.
 
 
+## Slots Controllers
+- Create Slots: Creates multiple appointment slots.
+- Create Slot: Creates a single appointment slot.
+- Get Slots: Retrieves information about all appointment slots.
+- Get Patient Slots: Retrieves appointment slots for a specific patient.
+- Get Slot: Retrieves information about a specific slot.
+- Get Clinic Slots: Retrieves appointment slots for a specific clinic.
+- Get Dentist Slots: Retrieves appointment slots for a specific dentist.
+- Update Slot: Updates information about a specific slot.
+- Book Slot: Books a specific slot.
+- Unbook Slot: Unbooks a specific slot.
+- Delete Slot: Deletes a specific slot.
+Delete All Slots: Deletes all slots.
 
-## Getting started
+## Emergency Slots Controllers
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+- Get Score: Retrieves the score for emergency slots.
+- Create Emergency Slot: Creates an emergency appointment slot.
+- Get Emergency Slots: Retrieves emergency appointment slots for a specific date.
+- Delete Emergency Slot: Deletes a specific emergency appointment slot.
+- Get Result: Retrieves the result of emergency slots.
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+#### Test Stage
 
-## Add your files
+We currently have only the unit tests. The script npm tun test:ci is used to test the whole project. <br>
+In the future, integration test stage may be implemented as well.
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
+#Testing
+Our project undergoes automatic testing through the GitLab CI/CD pipeline whenever a new commit is pushed to the remote repository. We use Jest for unit testing. The tests cover various scenarios, including creating dentists, logging in, updating information, and handling exceptions.
 
-```
-cd existing_repo
-git remote add origin https://git.chalmers.se/courses/dit355/2023/student-teams/dit356-2023-03/auth_service.git
-git branch -M main
-git push -uf origin main
-```
+## Contributions
 
-## Integrate with your tools
+#### All Controllers
 
-- [ ] [Set up project integrations](https://git.chalmers.se/courses/dit355/2023/student-teams/dit356-2023-03/auth_service/-/settings/integrations)
+Tanya Susanna Benu (gusbenuta@student.gu.se) and Tehreem Asif (gusasite@student.gu.se) has created all of the relative methods and functionalities.. 
 
-## Collaborate with your team
+#### Emergency Booking
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
+David Boram Hong(guscholcda@student.gu.se) has worked on all controllers and schemas related to emergency booking system.
 
-## Test and Deploy
+#### Jest Tests & CI Pipeline
 
-Use the built-in continuous integration in GitLab.
+David Boram Hong(guscholcda@student.gu.se) has created all of the tests and CI pipeline.
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing(SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+#### DentistDocumentation
 
-***
-
-# Editing this README
-
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thank you to [makeareadme.com](https://www.makeareadme.com/) for this template.
-
-## Suggestions for a good README
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
-
-## Name
-Choose a self-explaining name for your project.
-
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
-
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
-
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
-
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+Tehreem Asif (gusasite@student.gu.se) has taken care of all the documentation for this service.
