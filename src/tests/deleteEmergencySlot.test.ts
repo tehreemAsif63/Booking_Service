@@ -2,39 +2,75 @@ import { deleteEmergencySlot } from "../controllers/emergencySlots-controller";
 import { MessageException } from "../exceptions/MessageException";
 import EmergencySlotSchema from "../schemas/emergencySlots";
 
-jest.mock("../schemas/slots");
+jest.mock("../schemas/emergencySlots");
 
-describe("deleteEmergencySlot", () => {
-  it("should throw invalid id", async () => {
-    const mockSlotId = "000000";
-    const mockSlot = {
-      slot_id: mockSlotId,
-    };
-
+describe("deleteEmergencySlots", () => {
+  it("should throw only dentists are allowed to perform this action", async () => {
+    const testData = { emergencySlot_id: "testId" };
     const requestInfo = {
       user: {
-        id: "someUserId",
-        email: "user@example.com",
-        userType: "dentist",
-        admin: true,
-        clinic_id: "000000",
+        id: "testID",
+        email: "patient@patient.com",
+        userType: "patient",
+        admin: false,
       },
-      requestID: "someRequestId",
+      requestID: "someRequestID",
     };
 
-    const findByIdAndDeleteMock = jest.spyOn(
-      EmergencySlotSchema,
-      "findByIdAndDelete"
-    );
-    findByIdAndDeleteMock.mockResolvedValue(null);
-
-    await expect(deleteEmergencySlot(mockSlot, requestInfo)).rejects.toThrow(
+    await expect(deleteEmergencySlot(testData, requestInfo)).rejects.toThrow(
       new MessageException({
-        code: 400,
-        message: "Invalid id",
+        code: 403,
+        message: "Only dentists are allowed to perform this action",
+      })
+    );
+  });
+
+  it("should throw booked emergency slots are not allowed to be deleted", async () => {
+    const testData = { emergencySlot_id: "testId", booked: true };
+    const requestInfo = {
+      user: {
+        id: "testID",
+        email: "patient@patient.com",
+        userType: "dentist",
+        admin: false,
+      },
+      requestID: "someRequestID",
+    };
+
+    const findByIdMock = jest.spyOn(EmergencySlotSchema, "findById");
+    findByIdMock.mockResolvedValue(testData);
+
+    await expect(deleteEmergencySlot(testData, requestInfo)).rejects.toThrow(
+      new MessageException({
+        code: 403,
+        message: "Booked emergency slots are not allowed to be deleted.",
       })
     );
 
-    findByIdAndDeleteMock.mockRestore();
+    findByIdMock.mockRestore();
+  });
+  it("should throw emergency slot does not exist", async () => {
+    const testData = { emergencySlot_id: "testId" };
+    const requestInfo = {
+      user: {
+        id: "testID",
+        email: "patient@patient.com",
+        userType: "dentist",
+        admin: false,
+      },
+      requestID: "someRequestID",
+    };
+
+    const findByIdMock = jest.spyOn(EmergencySlotSchema, "findById");
+    findByIdMock.mockResolvedValue(null);
+
+    await expect(deleteEmergencySlot(testData, requestInfo)).rejects.toThrow(
+      new MessageException({
+        code: 404,
+        message: "Emergency slot does not exist",
+      })
+    );
+
+    findByIdMock.mockRestore();
   });
 });

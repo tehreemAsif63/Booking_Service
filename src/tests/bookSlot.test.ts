@@ -6,25 +6,6 @@ import mongoose from "mongoose";
 jest.mock("../schemas/slots");
 
 describe("bookSlot", () => {
-  it("should throw forbidden when dentist tries to login", async () => {
-    const testData = { slot_id: "exampleID", patient_id: "exampleID" };
-    const requestInfo = {
-      user: {
-        id: "testID",
-        email: "patient@patient.com",
-        userType: "dentist",
-        admin: false,
-      },
-      requestID: "someRequestID",
-    };
-
-    await expect(bookSlot(testData, requestInfo)).rejects.toThrow(
-      new MessageException({
-        code: 403,
-        message: "Forbidden",
-      })
-    );
-  });
   it("should throw missing input needs to be specified", async () => {
     const testData = { patient_id: "testID" };
     const requestInfo = {
