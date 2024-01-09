@@ -228,14 +228,14 @@ export const getSlots: MessageHandler = async (data, requestInfo) => {
   if (!slots) {
     throw new MessageException({
       code: 400,
-      message: "Invalid slot ID", //can there really be an invalid slot id if we are getting all slots?
+      message: "Invalid slot ID", // testable
     });
   }
 
   if (slots === null) {
     throw new MessageException({
       code: 400,
-      message: "Slot does not exist", //we may have to get rid of both errors since a user might have no slots booked
+      message: "Slot does not exist", // TODO: create test
     });
   }
   return slots;
