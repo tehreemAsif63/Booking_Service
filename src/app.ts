@@ -6,7 +6,6 @@ import slotsController from "./controllers/slots-controller";
 import clinicsController from "./controllers/clinics-controller";
 import emergencySlotsController from "./controllers/emergencySlots-controller";
 import ScoreSchema from "./schemas/score";
-import schedule from "node-schedule";
 import {
   MessageData,
   MessageHandler,

@@ -211,8 +211,22 @@ export const getResult: MessageHandler = async (data, requestInfo) => {
     console.error(err);
   }
 };
+
+const deleteEmergencySlots: MessageHandler = async () => {
+  try {
+    const today = new Date();
+    const query = { start: { $lt: today } };
+    const result = await EmergencySlotSchema.deleteMany(query);
+    console.log(`${result.deletedCount} document(s) deleted.`);
+  } catch (error) {
+    console.error("Error deleting documents:", error);
+  }
+};
+
 const bookEmergencySlot: MessageHandler = async (user_id, requestInfo) => {
   const stringUserId = requestInfo.user?.id;
+
+  await deleteEmergencySlots(user_id, requestInfo);
 
   try {
     const tomorrow = new Date();
