@@ -436,6 +436,26 @@ const unBookSlot: MessageHandler = async (
   return slotData;
 };
 
+const deletePatientSlots: MessageHandler = async (data, requestInfo) => {
+  let query: FilterQuery<Slot> = {};
+  
+    query = {
+      patient_id: data.patient_id?data.patient_id:requestInfo.user?.id,
+    };
+   
+if(query.patient_id==null){
+  throw new MessageException({
+    code: 400,
+    message: "no patient id provided ", 
+  });
+}
+   await SlotSchema.deleteMany(query);
+ 
+ 
+  return "All slots for that patient has been deleted";
+  
+};
+
 const deleteAllSlots: MessageHandler = async (data, requestInfo) => {
   if (requestInfo.user?.userType !== "dentist") {
     throw new MessageException({
@@ -468,4 +488,5 @@ export default {
   bookSlot,
   unBookSlot,
   deleteAllSlots,
+  deletePatientSlots
 };
