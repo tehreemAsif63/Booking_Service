@@ -215,7 +215,7 @@ const getPatientSlots: MessageHandler = async (data, requestInfo) => {
   return slots;
 };
 
-const getSlots: MessageHandler = async (data, requestInfo) => {
+export const getSlots: MessageHandler = async (data, requestInfo) => {
   let query: FilterQuery<Slot> = {};
   if (requestInfo.user?.userType == "dentist") {
     query = {

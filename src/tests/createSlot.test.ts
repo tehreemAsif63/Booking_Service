@@ -47,7 +47,7 @@ describe("createSlot", () => {
     );
   });
 
-  it("should throw input missing ata, all data required", async () => {
+  it("should throw input missing data, all data required", async () => {
     const data = { start: "missing the end date!!" };
 
     const requestInfo = {

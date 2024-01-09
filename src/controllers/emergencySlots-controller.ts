@@ -23,13 +23,6 @@ export const getScore: MessageHandler = async (
     });
   }
 
-  if (!mongoose.Types.ObjectId.isValid(requestInfo?.user?.id)) {
-    throw new MessageException({
-      code: 400,
-      message: "Valid user id needs to be specified",
-    });
-  }
-
   try {
     const emergencyScore = data?.score;
 
@@ -81,20 +74,13 @@ export const createEmergencySlot: MessageHandler = async (
 
   if (!start || !end) {
     throw new MessageException({
-      code: 403,
+      code: 400,
       message: "Input missing data. All data required!",
     });
   }
 
   const clinic_id = requestInfo.user.clinic_id;
   const dentist_id = requestInfo.user.id;
-
-  if (!mongoose.Types.ObjectId.isValid(dentist_id)) {
-    throw new MessageException({
-      code: 400,
-      message: "Valid dentist Id is required",
-    });
-  }
 
   const startDate = new Date(start);
   const endDate = new Date(end);

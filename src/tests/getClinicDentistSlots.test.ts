@@ -1,4 +1,4 @@
-import { getClinicDentistSlots } from "../controllers/slots-controller";
+import { getClinicSlots } from "../controllers/slots-controller";
 import { MessageException } from "../exceptions/MessageException";
 import SlotSchema from "../schemas/slots";
 
@@ -23,8 +23,8 @@ describe("getClinicSlots", () => {
 
     (SlotSchema.find as jest.Mock).mockResolvedValueOnce(null);
 
-    await expect(getClinicDentistSlots(testData, requestInfo)).rejects.toThrow(
-      "Invalid Clinic/dentist id"
+    await expect(getClinicSlots(testData, requestInfo)).rejects.toThrow(
+      "Invalid clinic ID"
     );
   });
 });
