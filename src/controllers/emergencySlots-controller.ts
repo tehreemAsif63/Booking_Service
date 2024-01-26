@@ -4,11 +4,36 @@ import clinicSchema, { Clinic } from "../schemas/clinics";
 import ScoreSchema from "../schemas/score";
 import { MessageException } from "../exceptions/MessageException";
 import mongoose from "mongoose";
+import bwipjs from "bwip-js";
+
 import {
   MessageHandler,
   MessageData,
   RequestInfo,
 } from "../utilities/types-utils";
+
+// Code to generate Barcodes
+const generateBarcode = async (data) => {
+  return new Promise((resolve, reject) => {
+    bwipjs.toBuffer(
+      {
+        bcid: "code128",
+        text: data,
+        scale: 3,
+        height: 10,
+        includetext: true,
+      },
+      (err, png) => {
+        if (err) {
+          console.error("Error generating barcode:", err);
+          reject(err);
+        } else {
+          resolve(png.toString("base64"));
+        }
+      }
+    );
+  });
+};
 
 export const getScore: MessageHandler = async (
   data: { score?: number },
@@ -190,6 +215,9 @@ export const getResult: MessageHandler = async (data, requestInfo) => {
   const user_id = requestInfo.user?.id;
   try {
     const emergencyScore = await ScoreSchema.findOne({ userId: user_id });
+    const emergencySlot = await EmergencySlotSchema.findOne({
+      user_id: user_id,
+    });
 
     if (emergencyScore == null) {
       throw new MessageException({
@@ -198,15 +226,7 @@ export const getResult: MessageHandler = async (data, requestInfo) => {
       });
     }
 
-    const isEmergency = await (emergencyScore as any).isEmergency;
-
-    if (isEmergency === false) {
-      console.log("not emergency case");
-      console.log(isEmergency);
-    } else {
-      console.log("Emergency case");
-      return bookEmergencySlot({ user_id }, requestInfo);
-    }
+    return bookEmergencySlot({ user_id }, requestInfo);
   } catch (err) {
     console.error(err);
   }
@@ -223,7 +243,10 @@ const deleteEmergencySlots: MessageHandler = async () => {
   }
 };
 
-const bookEmergencySlot: MessageHandler = async (user_id, requestInfo) => {
+export const bookEmergencySlot: MessageHandler = async (
+  user_id,
+  requestInfo
+) => {
   const stringUserId = requestInfo.user?.id;
 
   await deleteEmergencySlots(user_id, requestInfo);
@@ -233,34 +256,39 @@ const bookEmergencySlot: MessageHandler = async (user_id, requestInfo) => {
     tomorrow.setDate(tomorrow.getDate() + 1);
     tomorrow.setHours(0, 0, 0, 0);
 
-    const bookedEmergencySlots: { user_id }[] = await EmergencySlotSchema.find({
-      start: {
-        $gte: tomorrow,
-        $lt: new Date(tomorrow.getTime() + 24 * 60 * 60 * 1000),
-      },
-      user_id: stringUserId,
-    });
+    const timeRange = {
+      $gte: tomorrow,
+      $lt: new Date(tomorrow.getTime() + 24 * 60 * 60 * 1000),
+    };
+
+    const bookedEmergencySlots: { user_id; _id; clinic_id }[] =
+      await EmergencySlotSchema.find({
+        start: timeRange,
+        user_id: stringUserId,
+      });
 
     const emergencySlots: {
       _id: string;
       clinic_id: Object;
     }[] = await EmergencySlotSchema.find({
-      start: {
-        $gte: tomorrow,
-        $lt: new Date(tomorrow.getTime() + 24 * 60 * 60 * 1000),
-      },
+      start: timeRange,
       booked: false,
     });
 
     if (bookedEmergencySlots.length > 0) {
-      const toBeBooked = emergencySlots.shift();
+      console.log("Booked >= 1");
+      const toBeBooked = bookedEmergencySlots.shift();
       const toBeBookedId = toBeBooked?._id;
       const clinicId = toBeBooked?.clinic_id;
+
+      const barcodeData = toBeBookedId.toString();
+      const barcodeImage = await generateBarcode(barcodeData);
 
       const clinicInfo = await clinicSchema.findOne(
         { _id: clinicId },
         "clinicName address"
       );
+      console.log("clinicId: ", toBeBooked);
 
       const emergencySlot = await EmergencySlotSchema.findOne({
         _id: toBeBookedId,
@@ -270,6 +298,7 @@ const bookEmergencySlot: MessageHandler = async (user_id, requestInfo) => {
         ...emergencySlot?.toObject(),
         clinicName: clinicInfo?.clinicName,
         address: clinicInfo?.address,
+        barcode: barcodeImage,
       };
       console.log(result);
       return result;
@@ -279,6 +308,10 @@ const bookEmergencySlot: MessageHandler = async (user_id, requestInfo) => {
       const toBeBooked = emergencySlots.shift();
       const toBeBookedId = toBeBooked?._id;
       const clinicId = toBeBooked?.clinic_id;
+
+      const barcodeData = toBeBookedId?.toString();
+
+      const barcodeImage = await generateBarcode(barcodeData);
 
       const clinicInfo = await clinicSchema.findOne(
         { _id: clinicId },
@@ -298,6 +331,7 @@ const bookEmergencySlot: MessageHandler = async (user_id, requestInfo) => {
         ...emergencySlot?.toObject(),
         clinicName: clinicInfo?.clinicName,
         address: clinicInfo?.address,
+        barcode: barcodeImage,
       };
       console.log(result);
       return result;

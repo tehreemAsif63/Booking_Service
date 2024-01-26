@@ -1,5 +1,7 @@
 import ScoreSchema from "../schemas/score";
 import EmergencySlotSchema from "../schemas/emergencySlots";
+import { MessageException } from "../exceptions/MessageException";
+import { MessageHandler } from "../utilities/types-utils";
 
 /**
  * About:
@@ -80,12 +82,15 @@ export async function checkAvailability() {
  * This function is the part where our algorithm decides whether to activate the filter or not.
  * The preset value is currently 0.4
  */
+
+let minAvailability = 0.4;
+
 export async function isActivated(myScore) {
   try {
     const availability = await checkAvailability();
     const average = await calculateAverageScore();
 
-    if (availability !== undefined && availability < 0.4) {
+    if (availability !== undefined && availability < minAvailability) {
       console.log("Filter Activated: ", myScore > average, average);
       return myScore > average;
     } else {
@@ -95,3 +100,33 @@ export async function isActivated(myScore) {
     console.error("An error occured while comparing scores: ", err);
   }
 }
+
+export const setAvailability: MessageHandler = async (data, requestInfo) => {
+  const { availability } = data;
+
+  if (!requestInfo.user?.admin) {
+    throw new MessageException({
+      code: 403,
+      message:
+        "Only admins are allowed to modify the minimum availability criteria",
+    });
+  }
+
+  if (Number(availability) < 0 || Number(availability) > 1) {
+    throw new MessageException({
+      code: 400,
+      message: "Availability cannot be smaller than 0 or larger than 1",
+    });
+  }
+
+  try {
+    minAvailability = Number(availability);
+    console.log(`Minimum availability is set as ${availability}`);
+  } catch (err) {
+    console.error("An error has occured: ", err);
+  }
+};
+
+export default {
+  setAvailability,
+};

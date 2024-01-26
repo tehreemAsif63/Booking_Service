@@ -38,7 +38,12 @@ scoreSchema.virtual("isEmergency").get(async function (this: IScore) {
     console.log("Proceeding to the second filter");
     try {
       const activated = await isActivated(this.emergencyScore);
-      return activated;
+      if (activated) {
+        const blackList = await checkBlackList(this.userId);
+        return blackList;
+      } else {
+        return false;
+      }
     } catch (error) {
       console.error("Error in isActivated:", error);
       return false;

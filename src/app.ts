@@ -1,11 +1,13 @@
 import mqtt from "mqtt";
 import mongoose from "mongoose";
 import NodeGeocoder from "node-geocoder";
-import schedule from "node-schedule";
+import * as schedule from "node-schedule";
 import slotsController from "./controllers/slots-controller";
 import clinicsController from "./controllers/clinics-controller";
 import emergencySlotsController from "./controllers/emergencySlots-controller";
 import ScoreSchema from "./schemas/score";
+import scoreBarrier from "./emergency-service/score-barrier";
+import scoreComparer from "./emergency-service/score-comparer";
 import {
   MessageData,
   MessageHandler,
@@ -45,6 +47,8 @@ const messageMapping: { [key: string]: MessageHandler } = {
   "emergency-slots/delete/:emergencySlot_id":
     emergencySlotsController.deleteEmergencySlot,
   "emergency-slots/results": emergencySlotsController.getResult,
+  "emergency-slots/barrier": scoreBarrier.setBarrierScores,
+  "emergency-slots/availability": scoreComparer.setAvailability,
 };
 
 client.on("connect", () => {
